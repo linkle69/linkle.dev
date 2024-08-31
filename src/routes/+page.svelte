@@ -20,7 +20,7 @@
 		if (cachedProfile) {
 			tempProfile = JSON.parse(cachedProfile)
 		} else {
-			tempProfile = await fetch(`https://discordlookup.mesalytic.moe/v1/user/${id}`, {
+			tempProfile = await fetch(`/api/avatar?id=${id}`, {
 				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json'
@@ -49,12 +49,12 @@
 
 {#if !isLoading}
 	<div class="flex flex-col justify-center items-center h-screen min-h-screen overflow-auto mx-4">
-		<Avatar src={profile.avatar.link} class="w-32 h-32 min-w-32 min-h-32 rounded-full" />
+		<Avatar src={profile.avatar_url} class="w-32 h-32 min-w-32 min-h-32 rounded-full" />
 		<div class="flex flex-row items-center">
 			<h1 class="h1 font-bold my-2">{profile.global_name}</h1>
 			<h3 class="h3 ml-3 font-bold text-secondary-500">@{profile.username}</h3>
 		</div>
-		<img src={profile.banner.link} class="w-256 h-32 rounded-lg mt-2" alt="Banner" />
+		<img src={profile.banner_url} class="w-256 h-32 rounded-lg mt-2" alt="Banner" />
 		<h3 class="h3 my-4 font-bold">About Me</h3>
 		<div class="block card card-hover p-4">
 			<p>Im German and I like to code and play games</p>
@@ -66,17 +66,17 @@
 		</div>
 		<h3 class="h3 my-4 font-bold">Socials</h3>
 		<div class="grid grid-flow-col gap-2 items-center">
-			<a href="https://x.com/link0069" class="btn variant-filled">
+			<a href="https://x.com/link0069" class="btn-sm lg:btn-md variant-filled">
 				<span><Icon icon="bxl:twitter" width="24px" height="24px" /></span>
 				<span>Twitter</span>
 			</a>
-			<a href="https://github.com/link-discord" class="btn variant-filled">
+			<a href="https://github.com/link-discord" class="btn-sm lg:btn-md variant-filled">
 				<span><Icon icon="bxl:github" width="24px" height="24px" /></span>
 				<span>Github</span>
 			</a>
 			<a
 				href="https://steamcommunity.com/profiles/76561199084755219"
-				class="btn variant-filled"
+				class="btn-sm lg:btn-md variant-filled"
 			>
 				<span><Icon icon="bxl:steam" width="24px" height="24px" /></span>
 				<span>Steam</span>
@@ -87,10 +87,10 @@
 			{#each friendProfiles as friend}
 				{#if friend.url}
 					<a href={friend.url} target="_blank" rel="noopener noreferrer">
-						<Avatar src={friend.avatar.link} class="w-16 rounded-full" />
+						<Avatar src={friend.avatar_url} class="w-16 rounded-full" />
 					</a>
 				{:else}
-					<Avatar src={friend.avatar.link} class="w-16 rounded-full" />
+					<Avatar src={friend.avatar_url} class="w-16 rounded-full" />
 				{/if}
 			{/each}
 		</div>
