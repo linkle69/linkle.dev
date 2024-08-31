@@ -66,17 +66,17 @@
 		</div>
 		<h3 class="h3 my-4 font-bold">Socials</h3>
 		<div class="grid grid-flow-col gap-2 items-center">
-			<a href="https://x.com/link0069" class="btn-sm lg:btn-md variant-filled">
+			<a href="https://x.com/link0069" class="btn btn-sm lg:btn-md variant-filled">
 				<span><Icon icon="bxl:twitter" width="24px" height="24px" /></span>
 				<span>Twitter</span>
 			</a>
-			<a href="https://github.com/link-discord" class="btn-sm lg:btn-md variant-filled">
+			<a href="https://github.com/link-discord" class="btn btn-sm lg:btn-md variant-filled">
 				<span><Icon icon="bxl:github" width="24px" height="24px" /></span>
 				<span>Github</span>
 			</a>
 			<a
 				href="https://steamcommunity.com/profiles/76561199084755219"
-				class="btn-sm lg:btn-md variant-filled"
+				class="btn btn-sm lg:btn-md variant-filled"
 			>
 				<span><Icon icon="bxl:steam" width="24px" height="24px" /></span>
 				<span>Steam</span>
