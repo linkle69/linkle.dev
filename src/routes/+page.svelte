@@ -62,6 +62,7 @@
 			<p>I play: HSR + Fortnite + Minecraft and Persona Games</p>
 			<br />
 			<p>Honkai Star Rail UID: 700477503</p>
+			<p>Minecraft Username: LinkDiscord</p>
 		</div>
 		<h3 class="h3 my-4 font-bold">Socials</h3>
 		<div class="grid grid-flow-col gap-2 items-center">
