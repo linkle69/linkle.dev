@@ -48,7 +48,7 @@
 </script>
 
 {#if !isLoading}
-	<div class="flex flex-col justify-center items-center h-screen min-h-screen overflow-auto mx-4">
+	<div class="flex flex-col justify-center items-center h-screen min-h-screen overflow-auto sm:min-md:mx-4 sm:min-md:my-8">
 		<Avatar src={profile.avatar_url} class="w-32 h-32 min-w-32 min-h-32 rounded-full" />
 		<div class="flex flex-row items-center">
 			<h1 class="h1 font-bold my-2">{profile.global_name}</h1>
@@ -66,17 +66,17 @@
 		</div>
 		<h3 class="h3 my-4 font-bold">Socials</h3>
 		<div class="grid grid-flow-col gap-2 items-center">
-			<a href="https://x.com/link0069" class="btn btn-sm lg:btn-md variant-filled rounded-sm">
+			<a href="https://x.com/link0069" class="btn btn-sm lg:btn-md variant-filled">
 				<span><Icon icon="bxl:twitter" width="24px" height="24px" /></span>
 				<span>Twitter</span>
 			</a>
-			<a href="https://github.com/link-discord" class="btn btn-sm lg:btn-md variant-filled rounded-sm">
+			<a href="https://github.com/link-discord" class="btn btn-sm lg:btn-md variant-filled">
 				<span><Icon icon="bxl:github" width="24px" height="24px" /></span>
 				<span>Github</span>
 			</a>
 			<a
 				href="https://steamcommunity.com/profiles/76561199084755219"
-				class="btn btn-sm lg:btn-md variant-filled rounded-sm"
+				class="btn btn-sm lg:btn-md variant-filled"
 			>
 				<span><Icon icon="bxl:steam" width="24px" height="24px" /></span>
 				<span>Steam</span>
