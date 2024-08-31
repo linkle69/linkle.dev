@@ -48,7 +48,7 @@
 </script>
 
 {#if !isLoading}
-	<div class="flex flex-col justify-center items-center h-screen min-h-screen overflow-auto">
+	<div class="flex flex-col justify-center items-center h-screen min-h-screen overflow-auto mx-4">
 		<Avatar src={profile.avatar.link} class="w-32 h-32 min-w-32 min-h-32 rounded-full" />
 		<div class="flex flex-row items-center">
 			<h1 class="h1 font-bold my-2">{profile.global_name}</h1>
@@ -56,7 +56,7 @@
 		</div>
 		<img src={profile.banner.link} class="w-256 h-32 rounded-lg mt-2" alt="Banner" />
 		<h3 class="h3 my-4 font-bold">About Me</h3>
-		<div class="block card card-hover p-4 mx-4">
+		<div class="block card card-hover p-4">
 			<p>Im German and I like to code and play games</p>
 			<br />
 			<p>I play: HSR + Fortnite + Minecraft and Persona Games</p>
