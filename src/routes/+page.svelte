@@ -5,7 +5,6 @@
 	const USER_ID = '476662199872651264'
 
 	let profile: any = null
-	let isLoading = true
 
 	async function getProfile() {
 		const avatarURL = await fetch(
@@ -26,19 +25,15 @@
 
 		if (cachedProfile) {
 			profile = JSON.parse(cachedProfile)
-			isLoading = false
 		} else {
 			profile = await getProfile()
 			sessionStorage.setItem(`avatar-${USER_ID}`, JSON.stringify(profile))
-			isLoading = false
 		}
 	})
 </script>
 
 <div class="flex justify-center items-center h-screen">
-	{#if isLoading}
-		<h1 class="h1 font-bold text-pre">Loading...</h1>
-	{:else}
+	{#if profile}
 		<div class="flex flex-col items-center">
 			<Avatar src={profile.avatar.link} class="w-32 rounded-full" />
 			<div class="flex flex-row items-center">
@@ -48,9 +43,10 @@
 			<img src={profile.banner.link} class="w-256 h-32 rounded-lg mt-2" alt="Banner" />
 			<div class="bg-surface-500 mt-4 px-4 pb-4 rounded-lg">
 				<p class="mt-4">Im German and I like to code and play games</p>
-			<a class="anchor" href="https://ko-fi.com/link0069">Kofi</a>
+				<a class="anchor" href="https://ko-fi.com/link0069">Kofi</a>
 			</div>
-			
 		</div>
+	{:else}
+		<h1 class="h1 font-bold text-pre">Loading...</h1>
 	{/if}
 </div>
