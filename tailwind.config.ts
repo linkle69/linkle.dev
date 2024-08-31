@@ -1,23 +1,24 @@
 import { join } from 'path'
 import type { Config } from 'tailwindcss'
-import typography from '@tailwindcss/typography';
-import { skeleton } from '@skeletonlabs/tw-plugin';
+import typography from '@tailwindcss/typography'
+import { skeleton } from '@skeletonlabs/tw-plugin'
 import { link } from './src/link'
 
 export default {
 	darkMode: 'class',
-	content: ['./src/**/*.{html,js,svelte,ts}', join(require.resolve('@skeletonlabs/skeleton'), '../**/*.{html,js,svelte,ts}')],
+	content: [
+		'./src/**/*.{html,js,svelte,ts}',
+		join(require.resolve('@skeletonlabs/skeleton'), '../**/*.{html,js,svelte,ts}')
+	],
 	theme: {
-		extend: {},
+		extend: {}
 	},
 	plugins: [
 		typography,
 		skeleton({
 			themes: {
-				custom: [
-					link,
-				],
-			},
-		}),
-	],
-} satisfies Config;
+				custom: [link]
+			}
+		})
+	]
+} satisfies Config
