@@ -68,3 +68,9 @@
 		<h1 class="h1 font-bold text-pre">Loading...</h1>
 	{/if}
 </div>
+
+<footer class="text-white py-4 mt-8">
+	<div class="container mx-auto text-center">
+		<h2 class="h2 font-bold">Footer Section</h2>
+	</div>
+</footer>
