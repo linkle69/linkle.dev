@@ -11,7 +11,7 @@ let cache = {
 	friendProfiles: []
 }
 
-async function fetchUser(id) {
+async function fetchUser(id: any) {
 	const response = await fetch(`https://discord.com/api/v10/users/${id}`, {
 		headers: {
 			Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
@@ -40,6 +40,7 @@ export async function load() {
 	if (cache.friendProfiles.length === 0) {
 		for (const friend of FRIEND_IDS) {
 			const friendProfile = await fetchUser(friend.id)
+			// @ts-ignore
 			cache.friendProfiles.push({ ...friendProfile, url: friend.url })
 		}
 	}
