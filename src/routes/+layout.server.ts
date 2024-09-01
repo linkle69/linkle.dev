@@ -32,6 +32,13 @@ async function fetchUser(id: any) {
 	return data
 }
 
+function clearCache() {
+	cache.userProfile = null
+	cache.friendProfiles = []
+}
+
+setInterval(clearCache, 3600000)
+
 export async function load() {
 	if (!cache.userProfile) {
 		cache.userProfile = await fetchUser(USER_ID)

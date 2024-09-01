@@ -3,6 +3,12 @@ import { json } from '@sveltejs/kit'
 
 let cache: any = {}
 
+function clearCache() {
+	cache = {}
+}
+
+setInterval(clearCache, 3600000)
+
 export const GET = async ({ url }) => {
 	const id = String(url.searchParams.get('id'))
 
