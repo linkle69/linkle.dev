@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Check out the repository
@@ -28,4 +31,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/link-discord/website:latest
+          tags: ghcr.io/link-discord/website
