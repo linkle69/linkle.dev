@@ -20,7 +20,9 @@
 		<h1 class="h1 font-bold my-2">{profile.global_name}</h1>
 		<h3 class="h3 ml-3 font-bold text-secondary-500">@{profile.username}</h3>
 	</div>
-	<img src={profile.banner_url} class="w-256 h-32 rounded-lg mt-2" alt="Banner" />
+	{#if profile.banner_url}
+		<img src={profile.banner_url} class="w-256 h-32 rounded-lg mt-2" alt="Banner" />
+	{/if}
 	<h3 class="h3 my-4 font-bold">About Me</h3>
 	<div class="block card card-hover p-4">
 		<p>Im German and I like to code and play games</p>
