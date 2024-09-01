@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit'
 import { json } from '@sveltejs/kit'
 
-let cache = {}
+let cache: any = {}
 
 export const GET = async ({ url }) => {
 	const id = String(url.searchParams.get('id'))
