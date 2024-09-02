@@ -22,7 +22,7 @@
 		"@tailwindcss/typography": "0.5.15",
 		"@types/node": "22.5.2",
 		"autoprefixer": "10.4.20",
-		"postcss": "8.4.43",
+		"postcss": "8.4.44",
 		"prettier": "^3.1.1",
 		"prettier-plugin-svelte": "^3.1.2",
 		"svelte": "^4.2.7",
