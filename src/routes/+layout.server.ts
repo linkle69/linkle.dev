@@ -1,5 +1,3 @@
-import { json } from '@sveltejs/kit'
-
 const USER_ID = '476662199872651264'
 const FRIEND_IDS = [
 	{ id: '565197576026980365', url: 'https://instellate.xyz' },
