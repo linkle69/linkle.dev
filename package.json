@@ -17,7 +17,7 @@
 		"@skeletonlabs/tw-plugin": "0.4.0",
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/adapter-node": "^5.2.2",
-		"@sveltejs/kit": "^2.0.0",
+		"@sveltejs/kit": "^2.8.2",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"@tailwindcss/typography": "0.5.15",
 		"@types/node": "22.5.2",
