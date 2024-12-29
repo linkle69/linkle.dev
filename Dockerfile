@@ -1,13 +1,21 @@
-FROM node:lts-alpine
+# Use the official Bun image
+FROM oven/bun:latest
 
+# Set working directory
 WORKDIR /app
 
-COPY package.json .
-COPY . .
+# Copy package files
+COPY package*.json ./
+COPY bun.lockb ./
 
-RUN npm install
-RUN npm run build
+# Install dependencies
+RUN bun install
 
+# Copy source code from src folder only
+COPY src ./src
+
+# Expose port
 EXPOSE 3000
 
-CMD ["node", "build"]
+# Start the application
+CMD ["bun", "run", "src/index.ts"]

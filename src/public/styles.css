@@ -1,0 +1,218 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+        sans-serif;
+}
+
+:root {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --secondary-text: #333333;
+    --card-bg: rgba(0, 0, 0, 0.1);
+    --button-bg: rgba(0, 0, 0, 0.1);
+    --button-hover: rgba(0, 0, 0, 0.25);
+    --accent-color: #252525;
+    --selection-color: #0099ff;
+}
+
+:root[data-theme='dark'] {
+    --bg-color: #0f0f0f;
+    --text-color: #ffffff;
+    --secondary-text: #e2e2e2;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --button-bg: rgba(255, 255, 255, 0.1);
+    --button-hover: rgba(255, 255, 255, 0.2);
+    --accent-color: #c5c5c5;
+    --selection-color: #0070bb;
+}
+
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--button-bg);
+    color: var(--text-color);
+    border: none;
+    padding: 8px 8px;
+    border-radius: 1000px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.theme-toggle:hover {
+    background-color: var(--button-hover);
+}
+
+.theme-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
+*::selection {
+    background-color: var(--selection-color);
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.profile-container {
+    text-align: center;
+}
+
+.profile-header {
+    margin-bottom: 24px;
+}
+
+.profile-pic {
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    background-color: var(--card-bg);
+}
+
+.profile-name {
+    font-size: 32px;
+    margin-bottom: 4px;
+}
+
+.profile-handle {
+    color: var(--accent-color);
+    font-size: 18px;
+    margin-bottom: 24px;
+}
+
+.about-section {
+    background-color: var(--card-bg);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.about-section h2 {
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.about-section p,
+.about-section ul {
+    color: var(--secondary-text);
+}
+
+.about-section ul {
+    margin-left: 20px;
+}
+
+.socials {
+    margin-bottom: 24px;
+}
+
+.social-links {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+.social-button {
+    background-color: var(--button-bg);
+    color: var(--text-color);
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.social-button:hover {
+    background-color: var(--button-hover);
+}
+
+.friends-section {
+    text-align: center;
+}
+
+.friends-section h2 {
+    margin-bottom: 16px;
+}
+
+.friends-grid {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.friend-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: var(--card-bg);
+}
+
+.no-js {
+    background-color: white;
+    color: black;
+    font-size: 32px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.no-js p {
+    text-align: center;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.no-js p::selection {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+    .no-js {
+        background-color: black;
+        color: white;
+    }
+
+    .no-js p::selection {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+}
+
+@media (max-width: 600px) {
+    .no-js p {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 450px) {
+    .no-js p {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 350px) {
+    .no-js p {
+        font-size: 16px;
+    }
+}
