@@ -38,7 +38,7 @@ async function fetchUser(id: string) {
     return user
 }
 
-app.use(cors({ origin: 'http://localhost:3000' }))
+app.use(cors({ origin: 'https://linkdiscord.xyz' }))
 
 app.get('/', async (req, res) => {
     const [user, file] = await Promise.all([
