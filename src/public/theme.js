@@ -2,28 +2,25 @@ const themeQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
 function setTheme(isDark) {
     const root = document.documentElement
-    const sunIcon = document.querySelector('.sun-icon')
-    const moonIcon = document.querySelector('.moon-icon')
 
     if (isDark) {
         root.setAttribute('data-theme', 'dark')
-        sunIcon.style.display = 'block'
-        moonIcon.style.display = 'none'
     } else {
         root.removeAttribute('data-theme')
-        sunIcon.style.display = 'none'
-        moonIcon.style.display = 'block'
     }
 }
 
 themeQuery.addEventListener('change', (e) => {
     setTheme(e.matches)
-    localStorage.setItem('theme', !isDark ? 'dark' : 'light')
+    document.cookie = `theme=${e.matches ? 'dark' : 'light'}; path=/`
 })
 
-const theme = localStorage.getItem('theme')
+const cookieExists = document.cookie !== ''
 
-if (theme) setTheme(theme === 'dark')
-else setTheme(themeQuery.matches)
-
-loadColor()
+if (!cookieExists) {
+    setTheme(themeQuery.matches)
+    document.cookie = `theme=${themeQuery.matches ? 'dark' : 'light'}; path=/`
+} else {
+    const theme = document.cookie.split('; ').find((row) => row.startsWith('theme='))
+    setTheme(theme === 'dark')
+}
