@@ -17,40 +17,26 @@
     --selection-color: #0099ff;
 }
 
-:root[data-theme='dark'] {
-    --bg-color: #0f0f0f;
-    --text-color: #ffffff;
-    --secondary-text: #e2e2e2;
-    --card-bg: rgba(255, 255, 255, 0.05);
-    --button-bg: rgba(255, 255, 255, 0.1);
-    --button-hover: rgba(255, 255, 255, 0.2);
-    --accent-color: #c5c5c5;
-    --selection-color: #0070bb;
-}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #0f0f0f;
+        --text-color: #ffffff;
+        --secondary-text: #e2e2e2;
+        --card-bg: rgba(255, 255, 255, 0.05);
+        --button-bg: rgba(255, 255, 255, 0.1);
+        --button-hover: rgba(255, 255, 255, 0.2);
+        --accent-color: #c5c5c5;
+        --selection-color: #0070bb;
+    }
 
-.theme-toggle {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background-color: var(--button-bg);
-    color: var(--text-color);
-    border: none;
-    padding: 8px 8px;
-    border-radius: 1000px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background-color 0.2s;
-}
+    .no-js {
+        background-color: black;
+        color: white;
+    }
 
-.theme-toggle:hover {
-    background-color: var(--button-hover);
-}
-
-.theme-toggle svg {
-    width: 20px;
-    height: 20px;
+    .no-js p::selection {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
 }
 
 *::selection {
@@ -186,17 +172,6 @@ body {
 
 .no-js p::selection {
     background-color: rgba(0, 0, 0, 0.5);
-}
-
-@media (prefers-color-scheme: dark) {
-    .no-js {
-        background-color: black;
-        color: white;
-    }
-
-    .no-js p::selection {
-        background-color: rgba(255, 255, 255, 0.3);
-    }
 }
 
 @media (max-width: 600px) {

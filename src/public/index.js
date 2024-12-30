@@ -1,22 +1,6 @@
 const owner = '476662199872651264'
 const friends = ['565197576026980365', '585278686291427338']
 
-function setTheme(isDark) {
-    const root = document.documentElement
-    const sunIcon = document.querySelector('.sun-icon')
-    const moonIcon = document.querySelector('.moon-icon')
-
-    if (isDark) {
-        root.setAttribute('data-theme', 'dark')
-        sunIcon.style.display = 'block'
-        moonIcon.style.display = 'none'
-    } else {
-        root.removeAttribute('data-theme')
-        sunIcon.style.display = 'none'
-        moonIcon.style.display = 'block'
-    }
-}
-
 function componentToHex(c) {
     const hex = c.toString(16)
     return hex.length == 1 ? '0' + hex : hex
@@ -91,20 +75,8 @@ async function loadColor() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const root = document.documentElement
-    const themeToggle = document.querySelector('.theme-toggle')
-    const isDark = root.hasAttribute('data-theme')
-
-    setTheme(isDark)
     loadUsers()
     loadColor()
-
-    themeToggle.addEventListener('click', () => {
-        const isDark = root.hasAttribute('data-theme')
-        setTheme(!isDark)
-        loadColor()
-        localStorage.setItem('theme', !isDark ? 'dark' : 'light')
-    })
 
     setTimeout(() => {
         document.body.style.transition = 'background-color 0.3s ease'
