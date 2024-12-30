@@ -57,28 +57,14 @@ async function loadUsers() {
 
 async function loadColor() {
     const root = document.documentElement
-    const themeQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const theme = themeQuery.matches ? 'dark' : 'light'
     const color = await fetch(`/color/${owner}`).then((res) => res.text())
-
-    if (theme === 'light') {
-        const colorLighter = adjustColor(color, false, 30)
-        const colorDarker = adjustColor(color, true)
-        root.style.setProperty('--accent-color', colorDarker)
-        root.style.setProperty('--selection-color', hexToRGBA(colorLighter, 0.3))
-    } else {
-        const colorLighter = adjustColor(color, false, 60)
-        const colorDarker = adjustColor(color, true)
-        root.style.setProperty('--accent-color', colorLighter)
-        root.style.setProperty('--selection-color', hexToRGBA(colorDarker, 0.5))
-    }
+    const colorLighter = adjustColor(color, false, 60)
+    const colorDarker = adjustColor(color, true)
+    root.style.setProperty('--accent-color', colorLighter)
+    root.style.setProperty('--selection-color', hexToRGBA(colorDarker, 0.5))
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     loadUsers()
     loadColor()
-
-    setTimeout(() => {
-        document.body.style.transition = 'background-color 0.3s ease'
-    }, 50)
 })

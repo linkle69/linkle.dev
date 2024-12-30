@@ -6,37 +6,16 @@
         sans-serif;
 }
 
+
 :root {
-    --bg-color: #ffffff;
-    --text-color: #000000;
-    --secondary-text: #333333;
-    --card-bg: rgba(0, 0, 0, 0.1);
-    --button-bg: rgba(0, 0, 0, 0.1);
-    --button-hover: rgba(0, 0, 0, 0.25);
-    --accent-color: #252525;
-    --selection-color: #0099ff;
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg-color: #0f0f0f;
-        --text-color: #ffffff;
-        --secondary-text: #e2e2e2;
-        --card-bg: rgba(255, 255, 255, 0.05);
-        --button-bg: rgba(255, 255, 255, 0.1);
-        --button-hover: rgba(255, 255, 255, 0.2);
-        --accent-color: #c5c5c5;
-        --selection-color: #0070bb;
-    }
-
-    .no-js {
-        background-color: black;
-        color: white;
-    }
-
-    .no-js p::selection {
-        background-color: rgba(255, 255, 255, 0.3);
-    }
+    --bg-color: #0f0f0f;
+    --text-color: #ffffff;
+    --secondary-text: #e2e2e2;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --button-bg: rgba(255, 255, 255, 0.1);
+    --button-hover: rgba(255, 255, 255, 0.2);
+    --accent-color: #c5c5c5;
+    --selection-color: #0070bb;
 }
 
 *::selection {
@@ -150,8 +129,8 @@ body {
 }
 
 .no-js {
-    background-color: white;
-    color: black;
+    background-color: black;
+    color: white;
     font-size: 32px;
     position: fixed;
     top: 0;
@@ -171,7 +150,7 @@ body {
 }
 
 .no-js p::selection {
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(255, 255, 255, 0.3);
 }
 
 @media (max-width: 600px) {
@@ -183,11 +162,5 @@ body {
 @media (max-width: 450px) {
     .no-js p {
         font-size: 20px;
-    }
-}
-
-@media (max-width: 350px) {
-    .no-js p {
-        font-size: 16px;
     }
 }
