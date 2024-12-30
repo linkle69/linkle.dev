@@ -28,31 +28,6 @@
     --selection-color: #0070bb;
 }
 
-.theme-toggle {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background-color: var(--button-bg);
-    color: var(--text-color);
-    border: none;
-    padding: 8px 8px;
-    border-radius: 1000px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background-color 0.2s;
-}
-
-.theme-toggle:hover {
-    background-color: var(--button-hover);
-}
-
-.theme-toggle svg {
-    width: 20px;
-    height: 20px;
-}
-
 *::selection {
     background-color: var(--selection-color);
 }
