@@ -64,7 +64,6 @@ async function loadColor() {
     root.style.setProperty('--selection-color', hexToRGBA(colorDarker, 0.5))
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+loadColor().then(() => {
     loadUsers()
-    loadColor()
 })
