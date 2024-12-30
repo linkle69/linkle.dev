@@ -12,10 +12,5 @@ function setTheme(isDark) {
 
 themeQuery.addEventListener('change', (e) => {
     setTheme(e.matches)
-    localStorage.setItem('theme', !isDark ? 'dark' : 'light')
+    localStorage.setItem('theme', e.matches ? 'dark' : 'light')
 })
-
-const theme = localStorage.getItem('theme')
-
-if (theme) setTheme(theme === 'dark')
-else setTheme(themeQuery.matches)
