@@ -1,4 +1,4 @@
-
+// index.js
 const owner = '476662199872651264'
 const friends = ['565197576026980365', '585278686291427338']
 
@@ -25,17 +25,12 @@ function componentToHex(c) {
 
 function adjustColor(hexColor, darken = true, amount = 50) {
     const threshold = darken ? 180 : 75
-
-    // Convert hex to RGB
     let r = parseInt(hexColor.substring(1, 3), 16)
     let g = parseInt(hexColor.substring(3, 5), 16)
     let b = parseInt(hexColor.substring(5, 7), 16)
-
-    // Calculate perceived brightness (simple approximation)
     let brightness = (r * 299 + g * 587 + b * 114) / 1000
 
     if ((darken && brightness > threshold) || (!darken && brightness < threshold)) {
-        // Adjust color based on 'isDarken' flag
         r = darken ? Math.max(0, r - amount) : Math.min(255, r + amount)
         g = darken ? Math.max(0, g - amount) : Math.min(255, g + amount)
         b = darken ? Math.max(0, b - amount) : Math.min(255, b + amount)
@@ -44,7 +39,6 @@ function adjustColor(hexColor, darken = true, amount = 50) {
     const rc = componentToHex(r)
     const gc = componentToHex(g)
     const bc = componentToHex(b)
-
     return `#${rc}${gc}${bc}`
 }
 
@@ -101,23 +95,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const root = document.documentElement
     const themeQuery = window.matchMedia('(prefers-color-scheme: dark)')
     const themeToggle = document.querySelector('.theme-toggle')
+    const storedTheme = localStorage.getItem('theme')
 
-    setTheme(themeQuery.matches)
+    if (storedTheme) setTheme(storedTheme === 'dark')
+    else setTheme(themeQuery.matches)
+
     loadUsers()
     loadColor()
 
+    // Toggle theme
     themeToggle.addEventListener('click', () => {
         const isDark = root.hasAttribute('data-theme')
         setTheme(!isDark)
+        localStorage.setItem('theme', !isDark ? 'dark' : 'light')
         loadColor()
     })
 
+    // System theme change
     themeQuery.addEventListener('change', (e) => {
         setTheme(e.matches)
         loadColor()
+        localStorage.setItem('theme', !isDark ? 'dark' : 'light')
     })
 
     setTimeout(() => {
         document.body.style.transition = 'background-color 0.3s ease'
-    }, 100)
+    }, 50)
 })
