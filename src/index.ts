@@ -38,73 +38,66 @@ async function fetchUser(id: string) {
     return user
 }
 
-const app = new Elysia()
+new Elysia()
+    .use(cors({ origin: 'https://linkdiscord.xyz' }))
+    .use(
+        staticPlugin({
+            assets: 'src/public',
+            prefix: '/'
+        })
+    )
+    .get('/', async ({ set }) => {
+        const [user, file] = await Promise.all([
+            fetchUser(id),
+            fs.readFile('src/public/index.html', 'utf8')
+        ])
 
-app.use(cors({ origin: 'https://linkdiscord.xyz' }))
+        const $ = cheerio.load(file)
+        const accent_color = user.accent_color.toString(16).padStart(6, '0')
 
-app.use(
-    staticPlugin({
-        assets: 'src/public',
-        prefix: '/'
+        $('head').append(`<meta name="theme-color" content="#${accent_color}">`)
+
+        set.headers['Content-Type'] = 'text/html'
+        return $.html()
     })
-)
+    .get('/favicon.png', async ({ set }) => {
+        const user = await fetchUser(id)
+        let buffer = await client.get(commandOptions({ returnBuffers: true }), 'favicon')
 
-app.get('/', async ({ set }) => {
-    const [user, file] = await Promise.all([
-        fetchUser(id),
-        fs.readFile('src/public/index.html', 'utf8')
-    ])
+        if (!buffer) {
+            const data = await fetch(
+                `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`
+            )
 
-    const $ = cheerio.load(file)
-    const accent_color = user.accent_color.toString(16).padStart(6, '0')
+            if (!data.ok) {
+                set.status = 500
+                return
+            }
 
-    $('head').append(`<meta name="theme-color" content="#${accent_color}">`)
-
-    set.headers['Content-Type'] = 'text/html'
-    return $.html()
-})
-
-app.get('/favicon.png', async ({ set }) => {
-    const user = await fetchUser(id)
-    let buffer = await client.get(commandOptions({ returnBuffers: true }), 'favicon')
-
-    if (!buffer) {
-        const data = await fetch(
-            `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`
-        )
-
-        if (!data.ok) {
-            set.status = 500
-            return
+            buffer = Buffer.from(await data.arrayBuffer())
+            await client.set('favicon', buffer, { EX: ttl })
         }
 
-        buffer = Buffer.from(await data.arrayBuffer())
-        await client.set('favicon', buffer, { EX: ttl })
-    }
+        set.headers['Content-Type'] = 'image/png'
+        return buffer
+    })
+    .get('/avatar/:id', async ({ params, query, set }) => {
+        const user = await fetchUser(params.id)
+        const size = query.size || 128
+        const is_animated = user.avatar.startsWith('a_')
+        const extension = is_animated ? 'gif' : 'webp'
 
-    set.headers['Content-Type'] = 'image/png'
-    return buffer
-})
-
-app.get('/avatar/:id', async ({ params, query, set }) => {
-    const user = await fetchUser(params.id)
-    const size = query.size || 128
-    const is_animated = user.avatar.startsWith('a_')
-    const extension = is_animated ? 'gif' : 'webp'
-
-    set.headers['Content-Type'] = `image/${extension}`
-    set.status = 302
-    set.headers.Location = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${extension}?size=${size}`
-})
-
-app.get('/color/:id', async ({ params }) => {
-    const user = await fetchUser(params.id)
-    const accent_color = user.accent_color.toString(16).padStart(6, '0')
-    return `#${accent_color}`
-})
-
-app.get('/user/:id', ({ params }) => fetchUser(params.id))
-
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`)
-})
+        set.headers['Content-Type'] = `image/${extension}`
+        set.status = 302
+        set.headers.Location = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${extension}?size=${size}`
+        return
+    })
+    .get('/color/:id', async ({ params }) => {
+        const user = await fetchUser(params.id)
+        const accent_color = user.accent_color.toString(16).padStart(6, '0')
+        return `#${accent_color}`
+    })
+    .get('/user/:id', ({ params }) => fetchUser(params.id))
+    .listen(port, () => {
+        console.log(`Server is running on port ${port}`)
+    })
