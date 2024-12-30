@@ -8,7 +8,15 @@
     <link rel="preconnect" href="https://cdn.discordapp.com" />
     <link rel="icon" href="/favicon.png">
     <link rel="stylesheet" href="/styles.css" />
-    <script src="/theme.js"></script>
+    <script>
+        (function() {
+            const themeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            const theme = localStorage.getItem('theme') || (themeQuery.matches ? 'dark' : 'light');
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
     <script src="/index.js" defer></script>
     <meta name="og:title" content="Link" />
     <meta name="og:description" content="A website about link from link lol" />
