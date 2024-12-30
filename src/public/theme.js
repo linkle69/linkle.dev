@@ -12,15 +12,10 @@ function setTheme(isDark) {
 
 themeQuery.addEventListener('change', (e) => {
     setTheme(e.matches)
-    document.cookie = `theme=${e.matches ? 'dark' : 'light'}; path=/`
+    localStorage.setItem('theme', !isDark ? 'dark' : 'light')
 })
 
-const cookieExists = document.cookie !== ''
+const theme = localStorage.getItem('theme')
 
-if (!cookieExists) {
-    setTheme(themeQuery.matches)
-    document.cookie = `theme=${themeQuery.matches ? 'dark' : 'light'}; path=/`
-} else {
-    const theme = document.cookie.split('; ').find((row) => row.startsWith('theme='))
-    setTheme(theme === 'dark')
-}
+if (theme) setTheme(theme === 'dark')
+else setTheme(themeQuery.matches)

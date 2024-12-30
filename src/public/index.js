@@ -94,9 +94,12 @@ async function loadColor() {
 document.addEventListener('DOMContentLoaded', () => {
     const root = document.documentElement
     const themeToggle = document.querySelector('.theme-toggle')
+    const themeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const theme = localStorage.getItem('theme') || themeQuery.matches ? 'dark' : 'light'
 
     loadUsers()
     loadColor()
+    setTheme(theme === 'dark')
 
     themeToggle.addEventListener('click', () => {
         const isDark = root.hasAttribute('data-theme')
