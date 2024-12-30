@@ -61,7 +61,6 @@ async function loadUsers() {
         fetch(`/user/${owner}`).then((res) =>
             res.json().then((data) => {
                 const element = document.getElementById('owner')
-                element.src = `/avatar/${owner}?size=256`
                 element.alt = data.global_name
             })
         )
@@ -72,7 +71,6 @@ async function loadUsers() {
             .then((res) => res.json())
             .then((friendData) => {
                 const element = document.getElementById(`friend${i + 1}`)
-                element.src = `/avatar/${friendId}?size=128`
                 element.alt = friendData.global_name
             })
     )
