@@ -92,31 +92,8 @@ new Elysia()
         set.headers.Location = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${extension}?size=${size}`
         return
     })
-    .get('/banner/:id', async ({ params, query, set }) => {
+    .get('/color/:id', async ({ params }) => {
         const user = await fetchUser(params.id)
-        const size = query.size || 128
-        const hasBanner = user.banner !== null
-
-        if (!hasBanner) {
-            set.status = 404
-            return
-        }
-
-        const extension = user.banner ? 'png' : 'webp'
-
-        set.headers['Content-Type'] = `image/${extension}`
-        set.status = 302
-        set.headers.Location = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${extension}?size=${size}`
-        return
-    })
-    .get('/color/:id', async ({ params, set }) => {
-        const user = await fetchUser(params.id)
-
-        if (!user.accent_color) {
-            set.status = 404
-            return
-        }
-
         const accent_color = user.accent_color.toString(16).padStart(6, '0')
         return `#${accent_color}`
     })

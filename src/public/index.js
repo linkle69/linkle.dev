@@ -56,29 +56,14 @@ async function loadUsers() {
 }
 
 async function loadColor() {
-    try {
-        const root = document.documentElement
-        const response = await fetch(`/color/${owner}`)
-
-        if (!response.ok) {
-            throw new Error('Color not found')
-        }
-
-        const color = await response.text()
-        const colorLighter = adjustColor(color, false, 70)
-        const colorDarker = adjustColor(color, true)
-        root.style.setProperty('--accent-color', colorLighter)
-        root.style.setProperty('--selection-color', hexToRGBA(colorDarker, 0.5))
-    } catch (error) {
-        console.error(error)
-    }
+    const root = document.documentElement
+    const color = await fetch(`/color/${owner}`).then((res) => res.text())
+    const colorLighter = adjustColor(color, false, 60)
+    const colorDarker = adjustColor(color, true)
+    root.style.setProperty('--accent-color', colorLighter)
+    root.style.setProperty('--selection-color', hexToRGBA(colorDarker, 0.5))
 }
 
-async function bannerCheck() {
-    const banner = document.getElementById('banner')
-    const response = await fetch(`/banner/${owner}`)
-
-    if (response.ok) banner.style.display = 'block'
-}
-
-Promise.all([loadColor(), loadUsers(), bannerCheck()])
+loadColor().then(() => {
+    loadUsers()
+})
