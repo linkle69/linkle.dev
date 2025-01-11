@@ -29,10 +29,10 @@ for (let i = 0; i < friends.length; i++) {
         const data = await response.json()
         const animated = data.avatar.startsWith('a_')
         const extension = animated ? 'gif' : 'webp'
-        const avatar = `${data.avatar}.${extension}?size=64`
+        const avatar = `${data.avatar}.${extension}?size=512`
 
         friends[i].name = data.username
-        friends[i].avatar = `https://cdn.discordapp.com/avatars/${friend.id}/${avatar}?size=1024`
+        friends[i].avatar = `https://cdn.discordapp.com/avatars/${friend.id}/${avatar}`
     }
 }
 ---

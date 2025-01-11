@@ -60,7 +60,7 @@ if (response.ok) {
     const animated = data.avatar.startsWith('a_')
     const extension = animated ? 'gif' : 'webp'
 
-    avatar = `https://cdn.discordapp.com/avatars/${id}/${data.avatar}.${extension}?size=1024`
+    avatar = `https://cdn.discordapp.com/avatars/${id}/${data.avatar}.${extension}?size=512`
     displayName = data.global_name
     username = data.username
 
