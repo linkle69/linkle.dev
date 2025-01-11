@@ -1,3 +1,3 @@
 # Website
 
-My personal website in pure HTML, CSS and JavaScript.
+My personal website using [Astro](https://astro.build/) and [GitHub Pages](https://pages.github.com/).
