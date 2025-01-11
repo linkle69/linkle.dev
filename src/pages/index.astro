@@ -13,7 +13,6 @@ if (!token) throw new Error('No DISCORD_TOKEN secret')
 let displayName = ''
 let username = ''
 let avatar = ''
-let avatar128 = ''
 let accentColor = ''
 let selectionColor = ''
 let accentColorRAW = ''
@@ -62,7 +61,6 @@ if (response.ok) {
     const extension = animated ? 'gif' : 'webp'
 
     avatar = `https://cdn.discordapp.com/avatars/${id}/${data.avatar}.${extension}?size=1024`
-    avatar128 = `https://cdn.discordapp.com/avatars/${id}/${data.avatar}.${extension}?size=128`
     displayName = data.global_name
     username = data.username
 
@@ -235,7 +233,7 @@ if (response.ok) {
             <div class='profile-header'>
                 <Image
                     class='profile-pic'
-                    src={avatar128}
+                    src={avatar}
                     alt={displayName}
                     width={128}
                     height={128}
