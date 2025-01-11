@@ -1,0 +1,58 @@
+---
+import { Image } from 'astro:assets'
+import { getSecret } from 'astro:env/server'
+
+const token = getSecret('DISCORD_TOKEN')
+
+if (!token) throw new Error('No DISCORD_TOKEN secret')
+
+const friends: any[] = [
+    {
+        id: '565197576026980365',
+        link: 'https://instellate.xyz/'
+    },
+    {
+        id: '585278686291427338',
+        link: 'https://lumap.xyz/'
+    }
+]
+
+for (let i = 0; i < friends.length; i++) {
+    const friend = friends[i]
+    const response = await fetch(`https://discord.com/api/v10/users/${friend.id}`, {
+        headers: {
+            Authorization: `Bot ${token}`
+        }
+    })
+
+    if (response.ok) {
+        const data = await response.json()
+        const animated = data.avatar.startsWith('a_')
+        const extension = animated ? 'gif' : 'webp'
+        const avatar = `${data.avatar}.${extension}?size=64`
+
+        friends[i].name = data.username
+        friends[i].avatar = `https://cdn.discordapp.com/avatars/${friend.id}/${avatar}`
+    }
+}
+---
+
+<div class='friends-section'>
+    <h2>Friends</h2>
+    <div class='friends-grid'>
+        {
+            friends.map((friend) => (
+                <a href={friend.link}>
+                    <Image
+                        class='friend-avatar'
+                        src={friend.avatar}
+                        alt={friend.name}
+                        width={64}
+                        height={64}
+                        loading={'eager'}
+                    />
+                </a>
+            ))
+        }
+    </div>
+</div>

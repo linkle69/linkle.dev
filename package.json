@@ -3,13 +3,18 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "prebuild": "node generateAssets.js",
     "dev": "astro dev",
+    "prebuild": "node favicon.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.1.5"
+    "astro": "^5.1.5",
+    "astro-icon": "^1.1.5",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5"
   }
 }

@@ -1,7 +1,9 @@
 // @ts-check
 import { defineConfig } from 'astro/config'
+import icon from 'astro-icon'
 
-// https://astro.build/config
 export default defineConfig({
-    site: 'https://linkdiscord.xyz'
+    integrations: [icon()],
+    site: 'https://linkdiscord.xyz',
+    image: { domains: ['cdn.discordapp.com'] }
 })
