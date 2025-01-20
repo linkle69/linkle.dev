@@ -224,6 +224,16 @@ if (response.ok) {
                 margin-left: 20px;
             }
 
+            .about-section a {
+                color: color-mix(in srgb, var(--accentColor) 75%, #ffffff);
+                text-decoration: none;
+            }
+
+            .about-section a:hover {
+                color: color-mix(in srgb, var(--accentColor) 55%, #ffffff);
+                text-decoration: underline;
+            }
+
             .socials {
                 margin-bottom: 24px;
             }
@@ -298,9 +308,9 @@ if (response.ok) {
                 <br />
                 <p>Random games that I play:</p>
                 <ul>
-                    <li>Honkai Star Rail</li>
-                    <li>Fortnite</li>
-                    <li>Minecraft</li>
+                    <li><a href='https://hsr.hoyoverse.com/en-us/home'>Honkai Star Rail</a></li>
+                    <li><a href='https://www.fortnite.com/'>Fortnite</a></li>
+                    <li><a href='https://www.minecraft.net/'>Minecraft</a></li>
                 </ul>
                 <br />
                 <p>Honkai Star Rail UID: 700477503</p>
