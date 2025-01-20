@@ -35,6 +35,11 @@ try {
         })
     )
 
+    // generate a 88x31 image and call it button.png
+    await sharp(Buffer.from(buffer))
+        .resize(88, 31)
+        .toFile('./public/button.png')
+
     const time = Number(process.hrtime.bigint() - start) / 1e6
     console.log(`Generated assets in ${Math.floor(time)}ms`)
 } catch (error) {
