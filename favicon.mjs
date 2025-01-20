@@ -1,6 +1,14 @@
 import sharp from 'sharp'
 import { createCanvas, loadImage } from 'canvas'
 
+const id = '476662199872651264'
+const token = process.env.DISCORD_TOKEN
+
+if (!token) {
+    console.error('Missing DISCORD_TOKEN environment variable')
+    process.exit(1)
+}
+
 async function generateButton(buffer) {
     const width = 88
     const height = 31
@@ -42,14 +50,6 @@ async function generateButton(buffer) {
         console.error('Error generating button:', error)
         throw error
     }
-}
-
-const id = '476662199872651264'
-const token = process.env.DISCORD_TOKEN
-
-if (!token) {
-    console.error('Missing DISCORD_TOKEN environment variable')
-    process.exit(1)
 }
 
 try {
