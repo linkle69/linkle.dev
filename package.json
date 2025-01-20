@@ -4,12 +4,13 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "prebuild": "node favicon.mjs",
+    
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "astro": "^5.1.5",
     "astro-icon": "^1.1.5",
     "canvas": "^3.0.1",
