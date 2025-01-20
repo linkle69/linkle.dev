@@ -1,10 +1,6 @@
 name: Deploy to GitHub Pages
 
 on:
-    schedule:
-        # Run the workflow every day
-        - cron: '0 0 * * *'
-
     # Trigger the workflow every time you push to the `main` branch
     push:
         branches: [main]
