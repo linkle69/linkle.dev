@@ -141,8 +141,6 @@ if (response.ok) {
             }
 
             .profile-pic {
-                width: 128px;
-                height: 128px;
                 border-radius: 50%;
                 background-color: var(--card-bg);
                 border-color: var(--card-bg);
@@ -238,8 +236,8 @@ if (response.ok) {
                     class='profile-pic'
                     src={avatar}
                     alt={displayName}
-                    width={128}
-                    height={128}
+                    width={256}
+                    height={256}
                     loading={'eager'}
                 />
                 <h1 class='profile-name'>{displayName}</h1>
