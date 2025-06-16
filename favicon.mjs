@@ -1,7 +1,10 @@
 import sharp from 'sharp'
-import { createCanvas, loadImage } from 'canvas'
+import { createCanvas, loadImage } from '@napi-rs/canvas'
+import dotenv from 'dotenv'
 
-const id = '476662199872651264'
+dotenv.config()
+
+const id = '01GVK8R46P5DZ57GK0YN1JXVGG'
 const token = process.env.REVOLT_TOKEN
 
 if (!token) {
@@ -60,7 +63,9 @@ try {
         }
     })
 
-    if (!userResponse.ok) throw new Error('Failed to fetch user')
+    if (!userResponse.ok) {
+        throw new Error(`Failed to fetch user: ${userResponse.statusText}`)
+    }
 
     const user = await userResponse.json()
     const avatar = user.avatar
