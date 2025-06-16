@@ -2,10 +2,10 @@ import sharp from 'sharp'
 import { createCanvas, loadImage } from 'canvas'
 
 const id = '476662199872651264'
-const token = process.env.DISCORD_TOKEN
+const token = process.env.REVOLT_TOKEN
 
 if (!token) {
-    console.error('Missing DISCORD_TOKEN environment variable')
+    console.error('Missing REVOLT_TOKEN environment variable')
     process.exit(1)
 }
 
@@ -54,9 +54,9 @@ async function generateButton(buffer) {
 
 try {
     const start = process.hrtime.bigint()
-    const userResponse = await fetch(`https://discord.com/api/v10/users/${id}`, {
+    const userResponse = await fetch(`https://api.revolt.chat/users/${id}`, {
         headers: {
-            Authorization: `Bot ${token}`
+            'X-Bot-Token': token
         }
     })
 
@@ -64,7 +64,11 @@ try {
 
     const user = await userResponse.json()
     const avatar = user.avatar
-    const response = await fetch(`https://cdn.discordapp.com/avatars/${id}/${avatar}.png?size=256`)
+    const response = await fetch(
+        user.avatar
+            ? `https://autumn.revolt.chat/${avatar.tag}/${avatar._id}/${avatar.filename}`
+            : `https://api.revolt.chat/users/${id}/default_avatar`
+    )
 
     if (!response.ok) throw new Error('Failed to fetch avatar')
 

@@ -7,11 +7,11 @@ import { SchemaType } from '@google/generative-ai/server'
 
 import Friends from '../components/Friends.astro'
 
-const discord_token = getSecret('DISCORD_TOKEN')
+const revolt_token = getSecret('REVOLT_TOKEN')
 const gemini_key = getSecret('GEMINI_API_KEY')
 const id = '476662199872651264'
 
-if (!discord_token) throw new Error('No DISCORD_TOKEN secret')
+if (!revolt_token) throw new Error('No REVOLT_TOKEN secret')
 if (!gemini_key) throw new Error('No GEMINI_API_KEY secret')
 
 let displayName = ''
@@ -42,8 +42,8 @@ const model = genAI.getGenerativeModel({
     }
 })
 
-const response = await fetch(`https://discord.com/api/v10/users/${id}`, {
-    headers: { Authorization: `Bot ${discord_token}` }
+const response = await fetch(`https://api.revolt.chat/users/${id}`, {
+    headers: { 'X-Bot-Token': revolt_token }
 })
 
 function componentToHex(c: number) {
@@ -80,18 +80,19 @@ function hexToRGBA(hex: string, transparency = 1) {
 
 if (response.ok) {
     const data = await response.json()
-    const animated = data.avatar.startsWith('a_')
-    const extension = animated ? 'gif' : 'webp'
 
-    avatar = `https://cdn.discordapp.com/avatars/${id}/${data.avatar}.${extension}?size=512`
-    displayName = data.global_name
+    if (data.avatar) {
+        avatar = `https://autumn.revolt.chat/${data.avatar.tag}/${data.avatar._id}/${data.avatar.filename}`
+    } else {
+        avatar = `https://api.revolt.chat/users/${id}/default_avatar`
+    }
+
+    displayName = data.display_name ?? data.username
     username = data.username
 
-    const imageResponse = await fetch(
-        `https://cdn.discordapp.com/avatars/${id}/${data.avatar}.png?size=512`
-    )
+    const imageResponse = await fetch(avatar)
 
-    if (!imageResponse.ok) throw new Error('Couldnt fetch the avatar from discord')
+    if (!imageResponse.ok) throw new Error('Couldnt fetch the avatar from revolt')
 
     const imageBuffer = await imageResponse.arrayBuffer()
     let prompt = ''
