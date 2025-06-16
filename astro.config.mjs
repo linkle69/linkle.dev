@@ -4,6 +4,6 @@ import icon from 'astro-icon'
 
 export default defineConfig({
     integrations: [icon()],
-    site: 'https://linkdiscord.xyz',
+    site: 'https://linkle.dev',
     image: { domains: ['autumn.revolt.chat'] }
 })
