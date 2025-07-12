@@ -1,41 +1,18 @@
 ---
 import { Image } from 'astro:assets'
-import { getSecret } from 'astro:env/server'
 
-const token = getSecret('REVOLT_TOKEN')
-
-if (!token) throw new Error('No REVOLT_TOKEN secret')
-
-const friends: any[] = [
+const friends = [
     {
-        id: '565197576026980365',
+        name: 'Instellate',
+        avatar: 'https://instellate.xyz/img/button.png',
         link: 'https://instellate.xyz/'
     },
     {
-        id: '585278686291427338',
+        name: 'Lumap',
+        avatar: 'https://lumap.xyz/button.png',
         link: 'https://lumap.xyz/'
     }
 ]
-
-for (let i = 0; i < friends.length; i++) {
-    const friend = friends[i]
-    const response = await fetch(`https://api.revolt.chat/users/${friend.id}`, {
-        headers: {
-            'X-Bot-Token': token
-        }
-    })
-
-    if (response.ok) {
-        const data = await response.json()
-        if (data.avatar) {
-            friends[i].avatar = `https://autumn.revolt.chat/${data.avatar.tag}/${data.avatar._id}/${data.avatar.filename}`
-        } else {
-            friends[i].avatar = `https://api.revolt.chat/users/${friend.id}/default_avatar`
-        }
-
-        friends[i].name = data.username
-    }
-}
 ---
 
 <div class='friends-section'>
@@ -48,8 +25,8 @@ for (let i = 0; i < friends.length; i++) {
                         class='friend-avatar'
                         src={friend.avatar}
                         alt={friend.name}
-                        width={128}
-                        height={128}
+                        width={88}
+                        height={31}
                         loading={'eager'}
                     />
                 </a>
