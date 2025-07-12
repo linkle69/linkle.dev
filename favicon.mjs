@@ -35,7 +35,7 @@ async function generateButton(buffer) {
         ctx.globalAlpha = 0.8
         ctx.drawImage(avatarImage, 0, 0, width, height)
         ctx.globalAlpha = 1.0
-        ctx.font = '18px arial'
+        ctx.font = '16px arial'
         ctx.fillStyle = textColor
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
