@@ -22,7 +22,6 @@ jobs:
             - name: Install, build, and upload your site
               uses: withastro/action@v3
               env:
-                  REVOLT_TOKEN: ${{ secrets.REVOLT_TOKEN }}
                   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
     deploy:
