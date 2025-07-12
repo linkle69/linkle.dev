@@ -17,34 +17,30 @@ async function generateButton(buffer) {
     const height = 31
     const backgroundColor = '#23272A'
     const textColor = 'white'
-    const text = 'LINK'
+    const text = 'LINKLE'
 
     try {
         const darkenedAvatarBuffer = await sharp(buffer)
-            .linear(0.5, 0) // Adjust 0.7 for darkening amount (closer to 1.0 = less darkening)
+            .linear(0.5, 0)
             .toBuffer()
 
         const canvas = createCanvas(width, height)
         const ctx = canvas.getContext('2d')
 
-        // Fill background
         ctx.fillStyle = backgroundColor
         ctx.fillRect(0, 0, width, height)
 
-        // Draw avatar (blend mode multiply effect)
-        const avatarImage = await loadImage(darkenedAvatarBuffer) // Load the darkened avatar
-        ctx.globalAlpha = 0.8 // Adjust this value (0.0 - 1.0) for transparency
-        ctx.drawImage(avatarImage, 0, 0, width, height)
-        ctx.globalAlpha = 1.0 // Reset alpha
+        const avatarImage = await loadImage(darkenedAvatarBuffer)
 
-        // Draw text (using a built-in font)
-        ctx.font = '18px arial' // Use a generic sans-serif font
+        ctx.globalAlpha = 0.8
+        ctx.drawImage(avatarImage, 0, 0, width, height)
+        ctx.globalAlpha = 1.0
+        ctx.font = '18px arial'
         ctx.fillStyle = textColor
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
         ctx.fillText(text, width / 2, height / 2)
 
-        // Convert canvas to buffer and save
         const buttonBuffer = canvas.toBuffer('image/png')
         await sharp(buttonBuffer).toFile('./public/button.png')
 
@@ -56,7 +52,6 @@ async function generateButton(buffer) {
 }
 
 try {
-    const start = process.hrtime.bigint()
     const userResponse = await fetch(`https://api.revolt.chat/users/${id}`, {
         headers: {
             'X-Bot-Token': token
@@ -88,11 +83,7 @@ try {
         })
     )
 
-    // generate a 88x31 image and call it button.png
     await generateButton(Buffer.from(buffer))
-
-    const time = Number(process.hrtime.bigint() - start) / 1e6
-    console.log(`Generated assets in ${Math.floor(time)}ms`)
 } catch (error) {
     console.error('Error generating assets:', error)
 }
