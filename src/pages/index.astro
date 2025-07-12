@@ -259,6 +259,7 @@ selectionColor = hexToRGBA(colorLighter, 0.4)
     <body>
         <div class='profile-container'>
             <div class='profile-header'>
+                <h1 class='profile-name'>{username}</h1>
                 <Image
                     class='profile-pic'
                     src={Avatar}
@@ -267,7 +268,6 @@ selectionColor = hexToRGBA(colorLighter, 0.4)
                     height={256}
                     loading={'eager'}
                 />
-                <h1 class='profile-name'>{username}</h1>
             </div>
 
             <h2 style='margin-bottom: 16px;'>About Me</h2>
