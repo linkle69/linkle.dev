@@ -3,27 +3,23 @@ import { Image } from 'astro:assets'
 import { Icon } from 'astro-icon/components'
 import { getSecret } from 'astro:env/server'
 import { GoogleGenAI, Type } from '@google/genai'
+import { readFile } from 'fs/promises'
+import { join } from 'path'
 
 import Friends from '../components/Friends.astro'
+import Avatar from '../avatar.png'
 
-const revolt_token = getSecret('REVOLT_TOKEN')
 const gemini_key = getSecret('GEMINI_API_KEY')
-const id = '01GVK8R46P5DZ57GK0YN1JXVGG'
 
-if (!revolt_token) throw new Error('No REVOLT_TOKEN secret')
 if (!gemini_key) throw new Error('No GEMINI_API_KEY secret')
 
-let displayName = ''
-let username = ''
-let avatar = ''
+const username = 'Linkle'
+
 let accentColor = ''
 let selectionColor = ''
 let accentColorRAW = ''
 
 const genAI = new GoogleGenAI({ apiKey: gemini_key })
-const response = await fetch(`https://api.revolt.chat/users/${id}`, {
-    headers: { 'X-Bot-Token': revolt_token }
-})
 
 function componentToHex(c: number) {
     const hex = c.toString(16)
@@ -57,66 +53,51 @@ function hexToRGBA(hex: string, transparency = 1) {
     return `rgba(${r}, ${g}, ${b}, ${a})`
 }
 
-if (response.ok) {
-    const data = await response.json()
+const imagePath = join(process.cwd(), 'src', 'avatar.png')
+const imageBuffer = await readFile(imagePath)
 
-    if (data.avatar) {
-        avatar = `https://autumn.revolt.chat/${data.avatar.tag}/${data.avatar._id}/${data.avatar.filename}`
-    } else {
-        avatar = `https://api.revolt.chat/users/${id}/default_avatar`
-    }
+let prompt = ''
 
-    displayName = data.display_name ?? data.username
-    username = data.username + '#' + data.discriminator
+prompt += 'Give me the most prominent color in this image as hex code.\n'
+prompt += 'Make sure the color is not too dark or too light.\n'
+prompt += 'If the image has a lot of blue in it pick a more blueish color than greenish.'
 
-    const imageResponse = await fetch(avatar)
-
-    if (!imageResponse.ok) throw new Error('Couldnt fetch the avatar from revolt')
-
-    const imageBuffer = await imageResponse.arrayBuffer()
-    let prompt = ''
-
-    prompt += 'Give me the most prominent color in this image as hex code.\n'
-    prompt += 'Make sure the color is not too dark or too light.\n'
-    prompt += 'If the image has a lot of blue in it pick a more blueish color than greenish.'
-
-    const result = await genAI.models.generateContent({
-        model: 'gemini-2.0-flash',
-        config: {
-            responseMimeType: 'application/json',
-            responseSchema: {
-                type: Type.OBJECT,
-                required: ['accent_color'],
-                properties: {
-                    accent_color: {
-                        type: Type.STRING
-                    }
+const result = await genAI.models.generateContent({
+    model: 'gemini-2.0-flash',
+    config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+            type: Type.OBJECT,
+            required: ['accent_color'],
+            properties: {
+                accent_color: {
+                    type: Type.STRING
                 }
             }
-        },
-        contents: [
-            {
-                role: 'user',
-                parts: [
-                    { text: prompt },
-                    {
-                        inlineData: {
-                            data: Buffer.from(imageBuffer).toString('base64'),
-                            mimeType: 'image/webp'
-                        }
+        }
+    },
+    contents: [
+        {
+            role: 'user',
+            parts: [
+                { text: prompt },
+                {
+                    inlineData: {
+                        data: imageBuffer.toString('base64'),
+                        mimeType: 'image/png'
                     }
-                ]
-            }
-        ]
-    })
+                }
+            ]
+        }
+    ]
+})
 
-    const accentHex = JSON.parse(result.text).accent_color
-    const colorLighter = adjustColor(accentHex, false, 60)
+const accentHex = JSON.parse(result.text).accent_color
+const colorLighter = adjustColor(accentHex, false, 60)
 
-    accentColorRAW = accentHex
-    accentColor = colorLighter
-    selectionColor = hexToRGBA(colorLighter, 0.4)
-}
+accentColorRAW = accentHex
+accentColor = colorLighter
+selectionColor = hexToRGBA(colorLighter, 0.4)
 ---
 
 <!doctype html>
@@ -131,13 +112,13 @@ if (response.ok) {
         <link rel='icon' type='image/png' href='favicon-96.png' sizes='96x96' />
         <link rel='icon' type='image/png' href='favicon-192.png' sizes='192x192' />
         <title>Linkle</title>
-        <meta name='og:title' content={displayName} />
+        <meta name='og:title' content={username} />
         <meta name='og:description' content='My own silly profile website lol' />
         <meta name='description' content='My own silly profile website lol' />
-        <meta name='og:image' content={avatar} />
+        <meta name='og:image' content={Avatar.src} />
         <meta name='og:type' content='website' />
         <meta name='og:url' content='https://linkle.dev/' />
-        <meta name='og:logo' content={avatar} />
+        <meta name='og:logo' content={Avatar.src} />
         <meta name='theme-color' content={accentColorRAW} />
         <style define:vars={{ accentColor, selectionColor }} is:global>
             * {
@@ -192,13 +173,8 @@ if (response.ok) {
             }
 
             .profile-name {
+                color: color-mix(in srgb, var(--accentColor) 45%, #ffffff);
                 font-size: 32px;
-                margin-bottom: 4px;
-            }
-
-            .profile-handle {
-                color: color-mix(in srgb, var(--accentColor) 75%, #ffffff);
-                font-size: 18px;
                 margin-bottom: 24px;
             }
 
@@ -285,14 +261,13 @@ if (response.ok) {
             <div class='profile-header'>
                 <Image
                     class='profile-pic'
-                    src={avatar}
-                    alt={displayName}
+                    src={Avatar}
+                    alt={username}
                     width={256}
                     height={256}
                     loading={'eager'}
                 />
-                <h1 class='profile-name'>{displayName}</h1>
-                <div class='profile-handle'>{username}</div>
+                <h1 class='profile-name'>{username}</h1>
             </div>
 
             <h2 style='margin-bottom: 16px;'>About Me</h2>
@@ -315,15 +290,13 @@ if (response.ok) {
                         >
                     </li>
                     <li>
-                        <a
-                            href='https://persona5x.com'
-                            target='_blank'
-                            rel='noopener'>Persona 5: The Phantom X</a
+                        <a href='https://persona5x.com' target='_blank' rel='noopener'
+                            >Persona 5: The Phantom X</a
                         >
                     </li>
                 </ul>
                 <br />
-                <p>Honkai Star Rail UID: 700477503</p>
+                <p>Honkai Star Rail UID (Europe): 700477503</p>
                 <p>
                     Minecraft Username: <a
                         href='https://namemc.com/profile/LinkleDev.1'
@@ -340,7 +313,7 @@ if (response.ok) {
                 </p>
                 <p>
                     Revolt Tag: <a href='https://revolt.chat' target='_blank' rel='noopener'
-                        >{username}</a
+                        >Linkle#2325</a
                     >
                 </p>
             </div>

@@ -1,16 +1,6 @@
 import sharp from 'sharp'
 import { createCanvas, loadImage } from '@napi-rs/canvas'
-import dotenv from 'dotenv'
-
-dotenv.config()
-
-const id = '01GVK8R46P5DZ57GK0YN1JXVGG'
-const token = process.env.REVOLT_TOKEN
-
-if (!token) {
-    console.error('Missing REVOLT_TOKEN environment variable')
-    process.exit(1)
-}
+import { readFile } from 'fs/promises'
 
 async function generateButton(buffer) {
     const width = 88
@@ -52,38 +42,18 @@ async function generateButton(buffer) {
 }
 
 try {
-    const userResponse = await fetch(`https://api.revolt.chat/users/${id}`, {
-        headers: {
-            'X-Bot-Token': token
-        }
-    })
-
-    if (!userResponse.ok) {
-        throw new Error(`Failed to fetch user: ${userResponse.statusText}`)
-    }
-
-    const user = await userResponse.json()
-    const avatar = user.avatar
-    const response = await fetch(
-        user.avatar
-            ? `https://autumn.revolt.chat/${avatar.tag}/${avatar._id}/${avatar.filename}`
-            : `https://api.revolt.chat/users/${id}/default_avatar`
-    )
-
-    if (!response.ok) throw new Error('Failed to fetch avatar')
-
-    const buffer = await response.arrayBuffer()
+    const buffer = await readFile('./src/avatar.png')
     const sizes = [16, 32, 48, 64, 96, 192]
 
     await Promise.all(
         sizes.map(async (size) => {
-            await sharp(Buffer.from(buffer))
+            await sharp(buffer)
                 .resize(size, size)
                 .toFile(`./public/favicon-${size}.png`)
         })
     )
 
-    await generateButton(Buffer.from(buffer))
+    await generateButton(buffer)
 } catch (error) {
     console.error('Error generating assets:', error)
 }
