@@ -297,14 +297,21 @@ selectionColor = hexToRGBA(colorLighter, 0.4)
         <div class='profile-container'>
             <div class='profile-header'>
                 <h1 class='profile-name'>{username}</h1>
-                <Image
-                    class='profile-pic'
-                    src={Avatar}
-                    alt={username}
-                    width={256}
-                    height={256}
-                    loading={'eager'}
-                />
+                <a
+                    href='https://raw.githubusercontent.com/linkle69/linkle.dev/refs/heads/main/src/avatar.png'
+                    target='_blank'
+                    rel='noopener'
+                    style='all: unset; cursor: pointer;'
+                >
+                    <Image
+                        class='profile-pic'
+                        src={Avatar}
+                        alt={username}
+                        width={256}
+                        height={256}
+                        loading={'eager'}
+                    />
+                </a>
             </div>
 
             <h2 style='margin-bottom: 16px;'>About Me</h2>
