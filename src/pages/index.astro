@@ -236,6 +236,16 @@ selectionColor = hexToRGBA(colorLighter, 0.4)
             .social-button:hover {
                 background-color: var(--button-hover);
             }
+            /* Ensure inline SVG icons inherit text color for theming */
+            .social-button svg {
+                display: inline-block;
+                vertical-align: middle;
+                color: inherit; /* make sure currentColor resolves to the link text color */
+            }
+            .social-button svg,
+            .social-button svg * {
+                fill: currentColor !important;
+            }
             .friends-section {
                 text-align: center;
             }
@@ -252,6 +262,33 @@ selectionColor = hexToRGBA(colorLighter, 0.4)
 
             .friend-avatar {
                 background-color: var(--card-bg);
+            }
+
+            /* Light theme (CSS-only) honoring user's system preference */
+            @media (prefers-color-scheme: light) {
+                :root {
+                    /* Softer light background tinted by accent */
+                    --bg-color: color-mix(in srgb, var(--accentColor) 20%, #ffffff);
+                    --text-color: #111111;
+                    --secondary-text: #444444;
+                    /* Light, subtle surfaces */
+                    --card-bg: color-mix(in srgb, var(--accentColor) 10%, rgba(0, 0, 0, 0.04));
+                    --button-bg: color-mix(in srgb, var(--accentColor) 15%, rgba(0, 0, 0, 0.06));
+                    --button-hover: color-mix(in srgb, var(--accentColor) 25%, rgba(0, 0, 0, 0.1));
+                }
+
+                /* Improve contrast on light */
+                .profile-name {
+                    color: color-mix(in srgb, var(--accentColor) 45%, #000000);
+                }
+
+                .about-section a {
+                    color: color-mix(in srgb, var(--accentColor) 55%, #000000);
+                }
+
+                .about-section a:hover {
+                    color: color-mix(in srgb, var(--accentColor) 70%, #000000);
+                }
             }
         </style>
     </head>
@@ -323,21 +360,22 @@ selectionColor = hexToRGBA(colorLighter, 0.4)
                 <h2>Socials</h2>
                 <div class='social-links'>
                     <a href='https://x.com/linkledev' class='social-button'>
-                        <Icon name='twitter' />
+                        <Icon name='twitter' width={18} height={18} />
                         Twitter
                     </a>
                     <a href='https://github.com/linkle69' class='social-button'>
-                        <Icon name='github' />
+                        <Icon name='github' width={18} height={18} />
                         Github
                     </a>
                     <a href='https://steamcommunity.com/id/linkle69/' class='social-button'>
-                        <Icon name='steam' />
+                        <Icon name='steam' width={18} height={18} />
                         Steam
                     </a>
                 </div>
             </div>
 
-            <Friends />
+            <!-- Friend Section will be ditched for now -->
+            <!-- <Friends /> -->
         </div>
     </body>
 </html>
