@@ -42,7 +42,7 @@ async function generateButton(buffer) {
 try {
     const buffer = await readFile('./src/avatar.png')
 
-    await sharp(buffer).resize(512, 512).toFile(`./public/favicon-${size}.png`)
+    await sharp(buffer).resize(512, 512).toFile(`./public/favicon.png`)
     await generateButton(buffer)
 } catch (error) {
     console.error('Error generating assets:', error)
