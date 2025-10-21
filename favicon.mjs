@@ -1,17 +1,50 @@
 import sharp from 'sharp'
 import { createCanvas, loadImage } from '@napi-rs/canvas'
-import { readFile } from 'fs/promises'
+import { readFile, access } from 'fs/promises'
+import path from 'node:path'
 
-// Helper: return a PNG buffer of the first renderable frame (handles animated GIF/WebP and vector)
+// Supported input extensions (order = preference if multiple exist)
+const SUPPORTED_INPUT_EXTS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'tiff', 'avif', 'heic', 'svg']
+
+async function fileExists(p) {
+    try {
+        await access(p)
+        return true
+    } catch {
+        return false
+    }
+}
+
+// Resolve an avatar path that might be given without an extension
+async function resolveAvatarPath(hint) {
+    const input = hint || process.argv[2] || process.env.AVATAR_PATH || './src/avatar'
+    const hasExt = !!path.extname(input)
+
+    if (hasExt) {
+        if (await fileExists(input)) return input
+        throw new Error(`Avatar not found at ${input}`)
+    }
+
+    for (const ext of SUPPORTED_INPUT_EXTS) {
+        const candidate = `${input}.${ext}`
+        if (await fileExists(candidate)) return candidate
+    }
+
+    throw new Error(
+        `No avatar found. Tried: ${SUPPORTED_INPUT_EXTS.map((ext) => `${input}.${ext}`).join(', ')}`
+    )
+}
+
+// Return a PNG buffer of the first renderable frame (handles animated GIF/WebP and SVG)
 async function getFirstRenderableFrame(buffer) {
     const meta = await sharp(buffer, { animated: true }).metadata()
-
     const base =
         meta.pages && meta.pages > 1
             ? sharp(buffer, { animated: true }).extractFrame(0)
             : sharp(buffer)
 
-    const pngBuffer = await base.toFormat('png').toBuffer()
+    // For SVGs, you can tweak density for quality if needed
+    const pngBuffer = await base.png().toBuffer()
     return { pngBuffer, meta }
 }
 
@@ -59,12 +92,17 @@ async function generateFaviconMax(srcBuffer) {
     const { pngBuffer } = await getFirstRenderableFrame(srcBuffer)
     const size = 512
 
-    await sharp(pngBuffer).resize(size, size, { fit: 'cover' }).png().toFile('./public/favicon.png') // single file
+    await sharp(pngBuffer).resize(size, size, { fit: 'cover' }).png().toFile('./public/favicon.png')
 }
 
 try {
-    // Input can be .png, .jpg/.jpeg, .webp, .gif (animated OK), .tiff, .avif, .heic, .svg, etc.
-    const buffer = await readFile('./src/avatar.png')
+    // Pass nothing to auto-detect ./src/avatar.{ext}
+    // Or pass a path:
+    //   node script.js ./src/my-avatar.jpg
+    // Or via env:
+    //   AVATAR_PATH=./src/my-avatar.webp node script.js
+    const avatarPath = await resolveAvatarPath()
+    const buffer = await readFile(avatarPath)
 
     await generateFaviconMax(buffer)
     await generateButton(buffer)
