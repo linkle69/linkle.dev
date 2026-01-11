@@ -1,6 +1,7 @@
 import sharp from 'sharp'
 import { createCanvas, loadImage } from '@napi-rs/canvas'
-import { readFile } from 'fs/promises'
+import { readFile, readdir } from 'fs/promises'
+import { join } from 'path'
 
 async function generateButton(buffer) {
     const width = 88
@@ -39,10 +40,30 @@ async function generateButton(buffer) {
     }
 }
 
-try {
-    const buffer = await readFile('./src/avatar.png')
+async function findAvatar() {
+    const srcDir = './src'
+    const files = await readdir(srcDir)
+    const avatarFile = files.find(file => file.startsWith('avatar.'))
+    
+    if (!avatarFile) {
+        throw new Error('No avatar file found in src/ (expected avatar.png, avatar.gif, avatar.webp, etc.)')
+    }
+    
+    return join(srcDir, avatarFile)
+}
 
-    await sharp(buffer).resize(512, 512).toFile(`./public/favicon.png`)
+try {
+    const avatarPath = await findAvatar()
+    const buffer = await readFile(avatarPath)
+    
+    const metadata = await sharp(buffer).metadata()
+    const hasAlpha = metadata.hasAlpha
+    
+    await sharp(buffer, { animated: true })
+        .resize(512, 512)
+        .png({ quality: 100 })
+        .toFile(`./public/favicon.png`)
+    
     await generateButton(buffer)
 } catch (error) {
     console.error('Error generating assets:', error)

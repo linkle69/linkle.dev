@@ -1,24 +1,26 @@
 ---
 import { Image } from 'astro:assets'
 import { Icon } from 'astro-icon/components'
-import { getSecret } from 'astro:env/server'
-import { GoogleGenAI, Type } from '@google/genai'
-import { readFile } from 'fs/promises'
+import { readdir } from 'fs/promises'
 import { join } from 'path'
+import sharp from 'sharp'
 
-import Avatar from '../avatar.png'
+const avatarFiles = await readdir(join(process.cwd(), 'src'))
+const avatarFileName = avatarFiles.find((file) => file.startsWith('avatar.'))
 
-const gemini_key = getSecret('GEMINI_API_KEY')
+if (!avatarFileName) {
+    throw new Error(
+        'No avatar file found in src/ (expected avatar.png, avatar.gif, avatar.webp, etc.)'
+    )
+}
 
-if (!gemini_key) throw new Error('No GEMINI_API_KEY secret')
+const Avatar = await import(`../avatar.${avatarFileName.split('.').pop()}`).then((m) => m.default)
 
 const username = 'Linkle'
 
 let accentColor = ''
 let selectionColor = ''
 let accentColorRAW = ''
-
-const genAI = new GoogleGenAI({ apiKey: gemini_key })
 
 function componentToHex(c: number) {
     const hex = c.toString(16)
@@ -41,6 +43,7 @@ function adjustColor(hexColor: string, darken = true, amount = 50) {
     const rc = componentToHex(r)
     const gc = componentToHex(g)
     const bc = componentToHex(b)
+
     return `#${rc}${gc}${bc}`
 }
 
@@ -49,49 +52,187 @@ function hexToRGBA(hex: string, transparency = 1) {
     const g = parseInt(hex.substring(3, 5), 16)
     const b = parseInt(hex.substring(5, 7), 16)
     const a = transparency
+
     return `rgba(${r}, ${g}, ${b}, ${a})`
 }
 
-const imagePath = join(process.cwd(), 'src', 'avatar.png')
-const imageBuffer = await readFile(imagePath)
+const imagePath = join(process.cwd(), 'src', avatarFileName)
 
-let prompt = ''
+// ============================================
+// VIBRANT COLOR EXTRACTION
+// ============================================
 
-prompt += 'Give me the most prominent color in this image as hex code.\n'
-prompt += 'Make sure the color is not too dark or too light.\n'
-prompt += 'If the image has a lot of blue in it pick a more blueish color than greenish.'
+function rgbToHsv(r: number, g: number, b: number) {
+    r /= 255
+    g /= 255
+    b /= 255
+    const max = Math.max(r, g, b)
+    const min = Math.min(r, g, b)
+    const d = max - min
 
-const result = await genAI.models.generateContent({
-    model: 'gemini-2.0-flash',
-    config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-            type: Type.OBJECT,
-            required: ['accent_color'],
-            properties: {
-                accent_color: {
-                    type: Type.STRING
-                }
-            }
+    let h = 0
+    const s = max === 0 ? 0 : d / max
+    const v = max
+
+    if (d !== 0) {
+        switch (max) {
+            case r:
+                h = (g - b) / d + (g < b ? 6 : 0)
+                break
+            case g:
+                h = (b - r) / d + 2
+                break
+            case b:
+                h = (r - g) / d + 4
+                break
         }
-    },
-    contents: [
-        {
-            role: 'user',
-            parts: [
-                { text: prompt },
-                {
-                    inlineData: {
-                        data: imageBuffer.toString('base64'),
-                        mimeType: 'image/png'
-                    }
-                }
-            ]
+        h /= 6
+    }
+
+    return { h: h * 360, s, v }
+}
+
+function hsvToRgb(h: number, s: number, v: number) {
+    h /= 360
+    const i = Math.floor(h * 6)
+    const f = h * 6 - i
+    const p = v * (1 - s)
+    const q = v * (1 - f * s)
+    const t = v * (1 - (1 - f) * s)
+
+    let r = 0,
+        g = 0,
+        b = 0
+    switch (i % 6) {
+        case 0:
+            r = v
+            g = t
+            b = p
+            break
+        case 1:
+            r = q
+            g = v
+            b = p
+            break
+        case 2:
+            r = p
+            g = v
+            b = t
+            break
+        case 3:
+            r = p
+            g = q
+            b = v
+            break
+        case 4:
+            r = t
+            g = p
+            b = v
+            break
+        case 5:
+            r = v
+            g = p
+            b = q
+            break
+    }
+
+    return {
+        r: Math.round(r * 255),
+        g: Math.round(g * 255),
+        b: Math.round(b * 255)
+    }
+}
+
+async function extractVibrantColor(imagePath: string): Promise<string> {
+    const { data } = await sharp(imagePath)
+        .resize(64, 64, { fit: 'cover', position: 'center' })
+        .removeAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true })
+
+    type ColorData = { r: number; g: number; b: number; h: number; s: number; v: number }
+    const colors: ColorData[] = []
+
+    for (let i = 0; i < data.length; i += 3) {
+        const r = data[i],
+            g = data[i + 1],
+            b = data[i + 2]
+        const hsv = rgbToHsv(r, g, b)
+        colors.push({ r, g, b, ...hsv })
+    }
+
+    const vibrant = colors.filter((c) => c.s > 0.25 && c.v > 0.15 && c.v < 0.95)
+
+    if (vibrant.length < 10) {
+        const { dominant } = await sharp(imagePath).stats()
+        const hsv = rgbToHsv(dominant.r, dominant.g, dominant.b)
+        const boosted = hsvToRgb(
+            hsv.h,
+            Math.min(1, hsv.s * 1.4),
+            Math.max(0.4, Math.min(0.8, hsv.v))
+        )
+        return (
+            '#' +
+            [boosted.r, boosted.g, boosted.b].map((x) => x.toString(16).padStart(2, '0')).join('')
+        )
+    }
+
+    const buckets: ColorData[][] = Array.from({ length: 24 }, () => [])
+
+    for (const c of vibrant) {
+        const idx = Math.floor(c.h / 15) % 24
+        buckets[idx].push(c)
+    }
+
+    let bestIdx = 0
+    let bestScore = 0
+
+    for (let i = 0; i < 24; i++) {
+        const score = buckets[i].reduce((sum, c) => sum + c.s * c.s * (0.3 + c.v * 0.7), 0)
+        if (score > bestScore) {
+            bestScore = score
+            bestIdx = i
         }
+    }
+
+    const candidates = [
+        ...buckets[(bestIdx + 23) % 24],
+        ...buckets[bestIdx],
+        ...buckets[(bestIdx + 1) % 24]
     ]
-})
 
-const accentHex = JSON.parse(result.text).accent_color
+    candidates.sort((a, b) => b.s - a.s)
+
+    const topN = Math.max(1, Math.ceil(candidates.length * 0.15))
+    const top = candidates.slice(0, topN)
+
+    let sinSum = 0,
+        cosSum = 0,
+        sSum = 0,
+        vSum = 0
+    for (const c of top) {
+        const hRad = (c.h * Math.PI) / 180
+        sinSum += Math.sin(hRad)
+        cosSum += Math.cos(hRad)
+        sSum += c.s
+        vSum += c.v
+    }
+
+    let avgH = (Math.atan2(sinSum, cosSum) * 180) / Math.PI
+    if (avgH < 0) avgH += 360
+
+    const avgS = Math.min(1, (sSum / topN) * 1.25)
+    const avgV = Math.max(0.5, Math.min(0.85, vSum / topN))
+
+    const { r, g, b } = hsvToRgb(avgH, avgS, avgV)
+
+    return (
+        '#' +
+        [r, g, b].map((x) => Math.max(0, Math.min(255, x)).toString(16).padStart(2, '0')).join('')
+    )
+}
+
+const accentHex = await extractVibrantColor(imagePath)
 const colorLighter = adjustColor(accentHex, false, 60)
 
 accentColorRAW = accentHex
@@ -100,40 +241,97 @@ selectionColor = hexToRGBA(colorLighter, 0.4)
 ---
 
 <!doctype html>
-<html lang='en'>
+<html lang="en">
     <head>
-        <meta charset='UTF-8' />
-        <meta name='viewport' content='width=device-width, initial-scale=1.0' />
-        <link rel='icon' type='image/png' href='favicon.png' sizes='512 x 512' />
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" type="image/png" href="favicon.png" sizes="512 x 512" />
         <title>Linkle</title>
-        <meta name='og:title' content={username} />
-        <meta name='og:description' content='My own silly profile website lol' />
-        <meta name='description' content='My own silly profile website lol' />
-        <meta name='og:image' content={Avatar.src} />
-        <meta name='og:type' content='website' />
-        <meta name='og:url' content='https://linkle.dev/' />
-        <meta name='og:logo' content={Avatar.src} />
-        <meta name='theme-color' content={accentColorRAW} />
+        <meta name="og:title" content={username} />
+        <meta name="og:description" content="My own silly profile website lol" />
+        <meta name="description" content="My own silly profile website lol" />
+        <meta name="og:image" content={Avatar.src} />
+        <meta name="og:type" content="website" />
+        <meta name="og:url" content="https://linkle.dev/" />
+        <meta name="og:logo" content={Avatar.src} />
+        <meta name="theme-color" content={accentColorRAW} />
+
+        <!-- Prevent flash of wrong theme -->
+        <script is:inline>
+            ;(function () {
+                const stored = localStorage.getItem('theme')
+                if (stored) {
+                    document.documentElement.setAttribute('data-theme', stored)
+                } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+                    document.documentElement.setAttribute('data-theme', 'light')
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark')
+                }
+            })()
+        </script>
+
         <style define:vars={{ accentColor, selectionColor }} is:global>
             * {
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+                font-family:
+                    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
                     sans-serif;
             }
 
-            :root {
+            /* ===== DARK THEME (default) ===== */
+            :root,
+            [data-theme='dark'] {
                 --bg-color: color-mix(in srgb, var(--accentColor) 25%, #000000);
                 --text-color: #ffffff;
                 --secondary-text: #e2e2e2;
                 --card-bg: color-mix(in srgb, var(--accentColor) 9%, rgba(255, 255, 255, 0.05));
+                --card-shadow: none;
+                --card-border: transparent;
                 --button-bg: color-mix(in srgb, var(--accentColor) 15%, rgba(255, 255, 255, 0.1));
                 --button-hover: color-mix(
                     in srgb,
                     var(--accentColor) 30%,
                     rgba(255, 255, 255, 0.2)
                 );
+                --button-shadow: none;
+                --name-color: color-mix(in srgb, var(--accentColor) 65%, #ffffff);
+                --link-color: color-mix(in srgb, var(--accentColor) 75%, #ffffff);
+                --link-hover: color-mix(in srgb, var(--accentColor) 55%, #ffffff);
+                --avatar-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            }
+
+            /* ===== LIGHT THEME (improved contrast) ===== */
+            [data-theme='light'] {
+                /* Tinted gray background so white cards pop */
+                --bg-color: color-mix(in srgb, var(--accentColor) 10%, #e8e8e8);
+                --text-color: #1a1a1a;
+                --secondary-text: #4a4a4a;
+
+                /* White cards with accent tint, border, and shadow for depth */
+                --card-bg: color-mix(in srgb, var(--accentColor) 6%, #ffffff);
+                --card-shadow:
+                    0 1px 3px color-mix(in srgb, var(--accentColor) 10%, rgba(0, 0, 0, 0.08)),
+                    0 4px 12px color-mix(in srgb, var(--accentColor) 8%, rgba(0, 0, 0, 0.05));
+                --card-border: color-mix(in srgb, var(--accentColor) 20%, rgba(0, 0, 0, 0.08));
+
+                /* More prominent buttons with accent color */
+                --button-bg: color-mix(in srgb, var(--accentColor) 18%, #ffffff);
+                --button-hover: color-mix(in srgb, var(--accentColor) 30%, #ffffff);
+                --button-shadow:
+                    0 1px 2px color-mix(in srgb, var(--accentColor) 15%, rgba(0, 0, 0, 0.1)),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
+                /* Vibrant accent colors for text elements */
+                --name-color: color-mix(in srgb, var(--accentColor) 85%, #000000);
+                --link-color: color-mix(in srgb, var(--accentColor) 90%, #000000);
+                --link-hover: color-mix(in srgb, var(--accentColor) 70%, #000000);
+
+                /* Avatar glow effect */
+                --avatar-shadow:
+                    0 4px 15px color-mix(in srgb, var(--accentColor) 30%, rgba(0, 0, 0, 0.15)),
+                    0 0 0 3px color-mix(in srgb, var(--accentColor) 15%, #ffffff);
             }
 
             *::selection {
@@ -148,10 +346,14 @@ selectionColor = hexToRGBA(colorLighter, 0.4)
                 align-items: center;
                 min-height: 100vh;
                 padding: 20px;
+                transition:
+                    background-color 0.3s ease,
+                    color 0.3s ease;
             }
 
             .profile-container {
                 text-align: center;
+                position: relative;
             }
 
             .profile-header {
@@ -163,21 +365,35 @@ selectionColor = hexToRGBA(colorLighter, 0.4)
                 height: 128px;
                 border-radius: 50%;
                 background-color: var(--card-bg);
-                border-color: var(--card-bg);
+                box-shadow: var(--avatar-shadow);
+                transition:
+                    box-shadow 0.3s ease,
+                    transform 0.2s ease;
+            }
+
+            .profile-pic:hover {
+                transform: scale(1.03);
             }
 
             .profile-name {
-                color: color-mix(in srgb, var(--accentColor) 65%, #ffffff);
+                color: var(--name-color);
                 font-size: 32px;
                 margin-bottom: 6px;
+                transition: color 0.3s ease;
             }
 
             .about-section {
                 background-color: var(--card-bg);
                 padding: 16px;
-                border-radius: 8px;
+                border-radius: 12px;
                 margin-bottom: 24px;
                 text-align: left;
+                box-shadow: var(--card-shadow);
+                border: 1px solid var(--card-border);
+                transition:
+                    background-color 0.3s ease,
+                    box-shadow 0.3s ease,
+                    border-color 0.3s ease;
             }
 
             .about-section h2 {
@@ -188,6 +404,7 @@ selectionColor = hexToRGBA(colorLighter, 0.4)
             .about-section p,
             .about-section ul {
                 color: var(--secondary-text);
+                transition: color 0.3s ease;
             }
 
             .about-section ul {
@@ -195,12 +412,14 @@ selectionColor = hexToRGBA(colorLighter, 0.4)
             }
 
             .about-section a {
-                color: color-mix(in srgb, var(--accentColor) 75%, #ffffff);
+                color: var(--link-color);
                 text-decoration: none;
+                font-weight: 500;
+                transition: color 0.2s ease;
             }
 
             .about-section a:hover {
-                color: color-mix(in srgb, var(--accentColor) 55%, #ffffff);
+                color: var(--link-hover);
                 text-decoration: underline;
             }
 
@@ -218,28 +437,41 @@ selectionColor = hexToRGBA(colorLighter, 0.4)
             .social-button {
                 background-color: var(--button-bg);
                 color: var(--text-color);
-                padding: 8px 16px;
-                border-radius: 20px;
+                padding: 10px 18px;
+                border-radius: 24px;
                 text-decoration: none;
                 display: flex;
                 align-items: center;
                 gap: 8px;
-                transition: background-color 0.2s;
+                font-weight: 500;
+                box-shadow: var(--button-shadow);
+                border: 1px solid var(--card-border);
+                transition:
+                    background-color 0.2s ease,
+                    transform 0.15s ease,
+                    box-shadow 0.2s ease;
             }
 
             .social-button:hover {
                 background-color: var(--button-hover);
+                transform: translateY(-2px);
             }
-            /* Ensure inline SVG icons inherit text color for theming */
+
+            .social-button:active {
+                transform: translateY(0);
+            }
+
             .social-button svg {
                 display: inline-block;
                 vertical-align: middle;
-                color: inherit; /* make sure currentColor resolves to the link text color */
+                color: inherit;
             }
+
             .social-button svg,
             .social-button svg * {
                 fill: currentColor !important;
             }
+
             .friends-section {
                 text-align: center;
             }
@@ -258,47 +490,134 @@ selectionColor = hexToRGBA(colorLighter, 0.4)
                 background-color: var(--card-bg);
             }
 
-            /* Light theme (CSS-only) honoring user's system preference */
-            @media (prefers-color-scheme: light) {
-                :root {
-                    /* Softer light background tinted by accent */
-                    --bg-color: color-mix(in srgb, var(--accentColor) 20%, #ffffff);
-                    --text-color: #111111;
-                    --secondary-text: #444444;
-                    /* Light, subtle surfaces */
-                    --card-bg: color-mix(in srgb, var(--accentColor) 10%, rgba(0, 0, 0, 0.04));
-                    --button-bg: color-mix(in srgb, var(--accentColor) 15%, rgba(0, 0, 0, 0.06));
-                    --button-hover: color-mix(in srgb, var(--accentColor) 25%, rgba(0, 0, 0, 0.1));
-                }
+            /* ===== THEME TOGGLE BUTTON ===== */
+            .theme-toggle {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background-color: var(--button-bg);
+                border: 1px solid var(--card-border);
+                border-radius: 50%;
+                width: 46px;
+                height: 46px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: var(--button-shadow);
+                transition:
+                    background-color 0.2s,
+                    transform 0.2s,
+                    box-shadow 0.2s;
+                color: var(--text-color);
+            }
 
-                /* Improve contrast on light */
-                .profile-name {
-                    color: color-mix(in srgb, var(--accentColor) 45%, #000000);
-                }
+            .theme-toggle:hover {
+                background-color: var(--button-hover);
+                transform: scale(1.1);
+            }
 
-                .about-section a {
-                    color: color-mix(in srgb, var(--accentColor) 55%, #000000);
-                }
+            .theme-toggle:active {
+                transform: scale(0.95);
+            }
 
-                .about-section a:hover {
-                    color: color-mix(in srgb, var(--accentColor) 70%, #000000);
-                }
+            .theme-toggle svg {
+                width: 22px;
+                height: 22px;
+                transition: transform 0.3s ease;
+            }
+
+            .theme-toggle:hover svg {
+                transform: rotate(20deg);
+            }
+
+            /* Icon visibility based on theme */
+            .theme-toggle .icon-sun {
+                display: none;
+            }
+
+            .theme-toggle .icon-moon {
+                display: block;
+            }
+
+            [data-theme='light'] .theme-toggle .icon-sun {
+                display: block;
+            }
+
+            [data-theme='light'] .theme-toggle .icon-moon {
+                display: none;
+            }
+
+            /* Light theme specific hover effects */
+            [data-theme='light'] .social-button:hover {
+                box-shadow:
+                    0 3px 8px color-mix(in srgb, var(--accentColor) 20%, rgba(0, 0, 0, 0.12)),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            }
+
+            [data-theme='light'] .about-section:hover {
+                box-shadow:
+                    0 2px 4px color-mix(in srgb, var(--accentColor) 12%, rgba(0, 0, 0, 0.1)),
+                    0 8px 20px color-mix(in srgb, var(--accentColor) 10%, rgba(0, 0, 0, 0.08));
+            }
+
+            [data-theme='light'] .theme-toggle:hover {
+                box-shadow: 0 3px 10px
+                    color-mix(in srgb, var(--accentColor) 20%, rgba(0, 0, 0, 0.15));
             }
         </style>
     </head>
 
     <body>
-        <div class='profile-container'>
-            <div class='profile-header'>
-                <h1 class='profile-name'>{username}</h1>
+        <!-- Theme Toggle Button -->
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+            <!-- Moon icon (shown in dark mode) -->
+            <svg
+                class="icon-moon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <!-- Sun icon (shown in light mode) -->
+            <svg
+                class="icon-sun"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+        </button>
+
+        <div class="profile-container">
+            <div class="profile-header">
+                <h1 class="profile-name">{username}</h1>
                 <a
-                    href='https://raw.githubusercontent.com/linkle69/linkle.dev/refs/heads/main/src/avatar.png'
-                    target='_blank'
-                    rel='noopener'
-                    style='all: unset; cursor: pointer;'
+                    href={`https://raw.githubusercontent.com/linkle69/linkle.dev/refs/heads/main/src/${avatarFileName}`}
+                    target="_blank"
+                    rel="noopener"
+                    style="all: unset; cursor: pointer;"
                 >
                     <Image
-                        class='profile-pic'
+                        class="profile-pic"
                         src={Avatar}
                         alt={username}
                         width={256}
@@ -308,28 +627,28 @@ selectionColor = hexToRGBA(colorLighter, 0.4)
                 </a>
             </div>
 
-            <h2 style='margin-bottom: 16px;'>About Me</h2>
+            <h2 style="margin-bottom: 16px;">About Me</h2>
 
-            <div class='about-section'>
+            <div class="about-section">
                 <p>Im German, I like gaming and coding and I have diagnosed Autism lol.</p>
-                <p>I absolutely love Oshi no ko, Omori and HSR</p>
+                <p>I love Oshi no ko, Omori, Limbus Company and HSR</p>
                 <br />
                 <p>Games that I play currently:</p>
                 <ul>
                     <li>
                         <a
-                            href='https://hsr.hoyoverse.com/en-us/home'
-                            target='_blank'
-                            rel='noopener'>Honkai Star Rail</a
+                            href="https://hsr.hoyoverse.com/en-us/home"
+                            target="_blank"
+                            rel="noopener">Honkai Star Rail</a
                         >
                     </li>
                     <li>
-                        <a href='https://www.fortnite.com/' target='_blank' rel='noopener'
+                        <a href="https://www.fortnite.com/" target="_blank" rel="noopener"
                             >Fortnite</a
                         >
                     </li>
                     <li>
-                        <a href='https://limbuscompany.com/' target='_blank' rel='noopener'
+                        <a href="https://limbuscompany.com/" target="_blank" rel="noopener"
                             >Limbus Company</a
                         >
                     </li>
@@ -338,33 +657,58 @@ selectionColor = hexToRGBA(colorLighter, 0.4)
                 <p>Honkai Star Rail UID (Europe): 700477503</p>
                 <p>
                     Minecraft Username: <a
-                        href='https://namemc.com/profile/LinkleDev.1'
-                        target='_blank'
-                        rel='noopener'>LinkleDev</a
+                        href="https://namemc.com/profile/LinkleDev.1"
+                        target="_blank"
+                        rel="noopener">LinkleDev</a
                     >
                 </p>
                 <p>
                     Fortnite Username: <a
-                        href='https://fortnitetracker.com/profile/all/Linkle_69'
-                        target='_blank'
-                        rel='noopener'>Linkle_69</a
+                        href="https://fortnitetracker.com/profile/all/L%d1%96nkle"
+                        target="_blank"
+                        rel="noopener">Linkle</a
                     >
                 </p>
             </div>
 
-            <div class='socials'>
+            <div class="socials">
                 <h2>Socials</h2>
-                <div class='social-links'>
-                    <a href='https://x.com/linkledev' class='social-button'>
-                        <Icon name='twitter' width={18} height={18} />
+                <div class="social-links">
+                    <a href="https://x.com/linkledev" class="social-button">
+                        <Icon name="twitter" width={18} height={18} />
                         Twitter
                     </a>
-                    <a href='https://github.com/linkle69' class='social-button'>
-                        <Icon name='github' width={18} height={18} />
+                    <a href="https://github.com/linkle69" class="social-button">
+                        <Icon name="github" width={18} height={18} />
                         Github
                     </a>
                 </div>
             </div>
         </div>
+
+        <!-- Client-side theme toggle script -->
+        <script>
+            const toggle = document.getElementById('theme-toggle')
+
+            function getTheme(): string {
+                return document.documentElement.getAttribute('data-theme') || 'dark'
+            }
+
+            function setTheme(theme: string) {
+                document.documentElement.setAttribute('data-theme', theme)
+                localStorage.setItem('theme', theme)
+            }
+
+            toggle?.addEventListener('click', () => {
+                const current = getTheme()
+                setTheme(current === 'dark' ? 'light' : 'dark')
+            })
+
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                if (!localStorage.getItem('theme')) {
+                    setTheme(e.matches ? 'dark' : 'light')
+                }
+            })
+        </script>
     </body>
 </html>
