@@ -56,9 +56,6 @@ try {
     const avatarPath = await findAvatar()
     const buffer = await readFile(avatarPath)
     
-    const metadata = await sharp(buffer).metadata()
-    const hasAlpha = metadata.hasAlpha
-    
     await sharp(buffer, { animated: true })
         .resize(512, 512)
         .png({ quality: 100 })
