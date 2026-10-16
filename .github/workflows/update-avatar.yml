@@ -1,0 +1,58 @@
+name: Update Avatar from Discord
+
+on:
+    # Check for a new Discord avatar every 6 hours
+    schedule:
+        - cron: '0 */6 * * *'
+
+    # Trigger the workflow manually
+    workflow_dispatch:
+
+permissions:
+    contents: write
+    actions: write
+
+concurrency:
+    group: update-avatar
+    cancel-in-progress: false
+
+jobs:
+    update:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout your repository using git
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Fetch the latest Discord avatar
+              run: node scripts/update-avatar.mjs
+              env:
+                  DISCORD_ID: ${{ secrets.DISCORD_ID }}
+                  DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+
+            - name: Commit and push the new avatar
+              id: commit
+              run: |
+                  if [ -z "$(git status --porcelain)" ]; then
+                      echo "No avatar change"
+                      echo "changed=false" >> "$GITHUB_OUTPUT"
+                      exit 0
+                  fi
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git add -A src .github/discord-avatar-hash
+                  git commit -m "Update avatar from Discord"
+                  git push
+                  echo "changed=true" >> "$GITHUB_OUTPUT"
+
+            # Pushes made with GITHUB_TOKEN don't trigger other workflows,
+            # so start the deployment explicitly
+            - name: Redeploy the website
+              if: steps.commit.outputs.changed == 'true'
+              run: gh workflow run deploy.yml --ref "${{ github.ref_name }}"
+              env:
+                  GH_TOKEN: ${{ github.token }}
