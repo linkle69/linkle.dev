@@ -143,8 +143,9 @@ function hsvToRgb(h: number, s: number, v: number) {
     }
 }
 
+// Colors are picked from the first frame only, so animated avatars work too
 async function extractVibrantColor(imagePath: string): Promise<string> {
-    const { data } = await sharp(imagePath)
+    const { data } = await sharp(imagePath, { pages: 1 })
         .resize(64, 64, { fit: 'cover', position: 'center' })
         .removeAlpha()
         .raw()
@@ -164,7 +165,7 @@ async function extractVibrantColor(imagePath: string): Promise<string> {
     const vibrant = colors.filter((c) => c.s > 0.25 && c.v > 0.15 && c.v < 0.95)
 
     if (vibrant.length < 10) {
-        const { dominant } = await sharp(imagePath).stats()
+        const { dominant } = await sharp(imagePath, { pages: 1 }).stats()
         const hsv = rgbToHsv(dominant.r, dominant.g, dominant.b)
         const boosted = hsvToRgb(
             hsv.h,

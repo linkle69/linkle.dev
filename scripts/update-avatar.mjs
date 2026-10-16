@@ -27,15 +27,18 @@ const user = await userResponse.json()
 
 // Users without a custom avatar get one of Discord's default avatars
 const avatarHash = user.avatar ?? `default-${(BigInt(id) >> 22n) % 6n}`
+// Animated avatar hashes start with a_ and are kept as a GIF
+const avatarExt = avatarHash.startsWith('a_') ? 'gif' : 'png'
+const avatarFile = `avatar.${avatarExt}`
 const avatarUrl = user.avatar
-    ? `https://cdn.discordapp.com/avatars/${id}/${user.avatar}.png?size=512`
+    ? `https://cdn.discordapp.com/avatars/${id}/${user.avatar}.${avatarExt}?size=512`
     : `https://cdn.discordapp.com/embed/avatars/${(BigInt(id) >> 22n) % 6n}.png`
 
 const files = await readdir(srcDir)
 const currentAvatars = files.filter((file) => file.startsWith('avatar.'))
 const storedHash = await readFile(hashFile, 'utf8').then((s) => s.trim(), () => null)
 
-if (storedHash === avatarHash && currentAvatars.includes('avatar.png')) {
+if (storedHash === avatarHash && currentAvatars.includes(avatarFile)) {
     console.log(`Avatar unchanged (${avatarHash})`)
     process.exit(0)
 }
@@ -54,7 +57,7 @@ for (const file of currentAvatars) {
     await rm(join(srcDir, file))
 }
 
-await writeFile(join(srcDir, 'avatar.png'), buffer)
+await writeFile(join(srcDir, avatarFile), buffer)
 await writeFile(hashFile, `${avatarHash}\n`)
 
 console.log(`Avatar updated (${storedHash ?? 'none'} -> ${avatarHash})`)

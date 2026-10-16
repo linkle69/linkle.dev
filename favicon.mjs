@@ -56,7 +56,8 @@ try {
     const avatarPath = await findAvatar()
     const buffer = await readFile(avatarPath)
     
-    await sharp(buffer, { animated: true })
+    // Favicons are static, so only the first frame of an animated avatar is used
+    await sharp(buffer)
         .resize(512, 512)
         .png({ quality: 100 })
         .toFile(`./public/favicon.png`)
